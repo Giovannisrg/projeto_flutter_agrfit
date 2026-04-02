@@ -47,38 +47,30 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
 
     Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (_currentPage < banners.length - 1) {
+      if (_controller.hasClients) {
         _currentPage++;
-      } else {
-        _currentPage = 0;
+        _controller.animateToPage(
+          _currentPage,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeIn,
+        );
       }
-
-      _controller.animateToPage(
-        _currentPage,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeIn,
-      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFDAD3E8),
-      appBar: AppBar(
-        title: const Text('AGR Fit', style: TextStyle(color: Colors.black)),
-        centerTitle: true,
-        backgroundColor: Colors.indigo[200],
-      ),
+      backgroundColor: Colors.black,
       body: Column(
         children: [
-          SizedBox(
-            height: 300,
+          AspectRatio(
+            aspectRatio: 4 / 4,
             child: PageView.builder(
               controller: _controller,
-              itemCount: banners.length,
               itemBuilder: (context, index) {
-                return _buildBanner(banners[index]);
+                final banner = banners[index % banners.length];
+                return _buildBanner(banner);
               },
             ),
           ),
@@ -86,9 +78,11 @@ class _LoginPageState extends State<LoginPage> {
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              decoration: const BoxDecoration(
-                color: Color(0xFFDAD3E8),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -98,6 +92,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         'LOGIN',
                         style: TextStyle(
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 24,
                         ),
@@ -106,13 +101,23 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 20),
 
-                    const Text('Usuário'),
+                    const Text(
+                      'Usuário',
+                      style: TextStyle(color: Colors.white70),
+                    ),
                     const SizedBox(height: 5),
                     TextField(
                       controller: _usuarioController,
-                      decoration: const InputDecoration(
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
                         hintText: 'Digite o nome de usuário',
-                        border: OutlineInputBorder(),
+                        hintStyle: const TextStyle(color: Colors.white38),
+                        filled: true,
+                        fillColor: Colors.grey[850],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                       onChanged: (valor) {
                         setState(() {
@@ -123,14 +128,24 @@ class _LoginPageState extends State<LoginPage> {
 
                     const SizedBox(height: 20),
 
-                    const Text('Senha'),
+                    const Text(
+                      'Senha',
+                      style: TextStyle(color: Colors.white70),
+                    ),
                     const SizedBox(height: 5),
                     TextField(
                       controller: _senhaController,
                       obscureText: true,
-                      decoration: const InputDecoration(
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
                         hintText: 'Digite sua senha',
-                        border: OutlineInputBorder(),
+                        hintStyle: const TextStyle(color: Colors.white38),
+                        filled: true,
+                        fillColor: Colors.grey[850],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                       onChanged: (valor) {
                         setState(() {
@@ -145,9 +160,12 @@ class _LoginPageState extends State<LoginPage> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigo[200],
-                          foregroundColor: Colors.black,
+                          backgroundColor: Colors.deepPurple,
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                         ),
                         onPressed: () {
                           if (_nomeUsuario.isEmpty || _senhaUsuario.isEmpty) {

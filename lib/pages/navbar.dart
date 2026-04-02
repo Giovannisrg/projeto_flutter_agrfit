@@ -26,12 +26,12 @@ class _NavBarPageState extends State<NavBarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_currentIndex],
-
+      backgroundColor: Colors.black,
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: Colors.purple,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Row(
@@ -60,11 +60,16 @@ class _NavBarPageState extends State<NavBarPage> {
         padding: const EdgeInsets.all(10),
         decoration: isSelected
             ? const BoxDecoration(
-                color: Colors.purpleAccent,
+                color: Color.fromARGB(255, 255, 255, 255),
                 shape: BoxShape.circle,
               )
             : null,
-        child: Icon(icon, color: isSelected ? Colors.black : Colors.white),
+        child: Icon(
+          icon,
+          color: isSelected
+              ? const Color.fromARGB(255, 90, 49, 159)
+              : Colors.white,
+        ),
       ),
     );
   }

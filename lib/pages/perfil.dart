@@ -9,10 +9,11 @@ class PerfilPage extends StatelessWidget {
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Perfil'),
+        foregroundColor: const Color.fromARGB(255, 226, 226, 226),
         backgroundColor: Colors.black,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.edit),
             onPressed: () {
               // depois você liga com configurações
             },

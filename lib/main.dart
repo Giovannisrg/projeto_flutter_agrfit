@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'pages/navbar.dart';
 
@@ -31,6 +32,35 @@ class _LoginPageState extends State<LoginPage> {
   String _nomeUsuario = "";
   String _senhaUsuario = "";
 
+  final PageController _controller = PageController();
+  int _currentPage = 0;
+
+  final List<String> banners = [
+    'assets/images/banner1.png',
+    'assets/images/banner2.png',
+    'assets/images/banner3.png',
+    'assets/images/banner4.png',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_currentPage < banners.length - 1) {
+        _currentPage++;
+      } else {
+        _currentPage = 0;
+      }
+
+      _controller.animateToPage(
+        _currentPage,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeIn,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,76 +70,78 @@ class _LoginPageState extends State<LoginPage> {
         centerTitle: true,
         backgroundColor: Colors.indigo[200],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 20.0,
+      body: Column(
+        children: [
+          SizedBox(
+            height: 300,
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: banners.length,
+              itemBuilder: (context, index) {
+                return _buildBanner(banners[index]);
+              },
             ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Image.asset('assets/images/logo.png', height: 120),
-                  ),
+          ),
 
-                  const SizedBox(height: 20),
-
-                  const Center(
-                    child: Text(
-                      'LOGIN',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              decoration: const BoxDecoration(
+                color: Color(0xFFDAD3E8),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Center(
+                      child: Text(
+                        'LOGIN',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                        ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  // USUÁRIO
-                  const Text('Usuário'),
-                  const SizedBox(height: 5),
-                  TextField(
-                    controller: _usuarioController,
-                    decoration: const InputDecoration(
-                      hintText: 'Digite o nome de usuário',
-                      border: OutlineInputBorder(),
+                    const Text('Usuário'),
+                    const SizedBox(height: 5),
+                    TextField(
+                      controller: _usuarioController,
+                      decoration: const InputDecoration(
+                        hintText: 'Digite o nome de usuário',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (valor) {
+                        setState(() {
+                          _nomeUsuario = valor;
+                        });
+                      },
                     ),
-                    onChanged: (valor) {
-                      setState(() {
-                        _nomeUsuario = valor;
-                      });
-                    },
-                  ),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  // SENHA
-                  const Text('Senha'),
-                  const SizedBox(height: 5),
-                  TextField(
-                    controller: _senhaController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      hintText: 'Digite sua senha',
-                      border: OutlineInputBorder(),
+                    const Text('Senha'),
+                    const SizedBox(height: 5),
+                    TextField(
+                      controller: _senhaController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        hintText: 'Digite sua senha',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (valor) {
+                        setState(() {
+                          _senhaUsuario = valor;
+                        });
+                      },
                     ),
-                    onChanged: (valor) {
-                      setState(() {
-                        _senhaUsuario = valor;
-                      });
-                    },
-                  ),
 
-                  const SizedBox(height: 25),
+                    const SizedBox(height: 25),
 
-                  Center(
-                    child: SizedBox(
+                    SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -136,13 +168,23 @@ class _LoginPageState extends State<LoginPage> {
                         child: const Text('Login'),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildBanner(String path) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(30),
+        bottomRight: Radius.circular(30),
+      ),
+      child: Image.asset(path, fit: BoxFit.cover, width: double.infinity),
     );
   }
 }

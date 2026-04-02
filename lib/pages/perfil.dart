@@ -27,15 +27,14 @@ class PerfilPage extends StatelessWidget {
             // FOTO
             const CircleAvatar(
               radius: 50,
-              backgroundColor: Colors.orange,
+              backgroundColor: Colors.purple,
               child: Icon(Icons.person, size: 50, color: Colors.white),
             ),
 
             const SizedBox(height: 15),
 
-            // NOME
             const Text(
-              'Alex Samit',
+              'Ana Júlia M.',
               style: TextStyle(color: Colors.white, fontSize: 22),
             ),
 
@@ -45,19 +44,17 @@ class PerfilPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // INFO FÍSICA
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: const [
-                _InfoBox(title: 'Peso', value: '70 kg'),
-                _InfoBox(title: 'Altura', value: '175 cm'),
-                _InfoBox(title: 'Idade', value: '20'),
+                _InfoBox(title: 'Peso', value: '75 kg'),
+                _InfoBox(title: 'Altura', value: '161 cm'),
+                _InfoBox(title: 'Idade', value: '21'),
               ],
             ),
 
             const SizedBox(height: 20),
 
-            // CARD 1
             _CardInfo(
               icon: Icons.favorite,
               title: '70 bpm',
@@ -74,7 +71,6 @@ class PerfilPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // CARD PRODUTIVIDADE
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(20),
@@ -145,7 +141,7 @@ class _CardInfo extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.orange),
+          Icon(icon, color: Colors.purple),
           const SizedBox(width: 10),
           Text(title, style: const TextStyle(color: Colors.white)),
           const Spacer(),

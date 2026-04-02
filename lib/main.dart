@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pages/navbar.dart';
 
 void main() {
   runApp(const MainApp());
@@ -124,8 +125,11 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Login realizado')),
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const NavBarPage(),
+                              ),
                             );
                           }
                         },

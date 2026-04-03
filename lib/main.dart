@@ -35,6 +35,8 @@ class _LoginPageState extends State<LoginPage> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
+  Timer? _timer;
+
   final List<String> banners = [
     'assets/images/banner1.png',
     'assets/images/banner2.png',
@@ -46,9 +48,10 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-    Timer.periodic(const Duration(seconds: 3), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (_controller.hasClients) {
-        _currentPage++;
+        _currentPage = (_currentPage + 1) % banners.length;
+
         _controller.animateToPage(
           _currentPage,
           duration: const Duration(milliseconds: 400),
@@ -56,6 +59,15 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    _usuarioController.dispose();
+    _senhaController.dispose();
+    super.dispose();
   }
 
   @override
@@ -115,7 +127,7 @@ class _LoginPageState extends State<LoginPage> {
                         filled: true,
                         fillColor: Colors.grey[850],
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(15),
                           borderSide: BorderSide.none,
                         ),
                       ),
@@ -143,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
                         filled: true,
                         fillColor: Colors.grey[850],
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(15),
                           borderSide: BorderSide.none,
                         ),
                       ),
@@ -160,7 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
+                          backgroundColor: Colors.purple,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(

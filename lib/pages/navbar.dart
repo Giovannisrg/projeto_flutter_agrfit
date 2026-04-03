@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-//import 'chatbot.dart';
+import 'chatbot.dart';
 //import 'configuracao.dart';
 import 'perfil.dart';
-//import 'treino.dart';
+import 'treino.dart';
 
 class NavBarPage extends StatefulWidget {
   const NavBarPage({super.key});
@@ -16,8 +16,8 @@ class _NavBarPageState extends State<NavBarPage> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    //const TreinoPage(),
-    //const ChatbotPage(),
+    const TreinoPage(),
+    const ChatbotPage(),
     const PerfilPage(),
     //const ConfiguracaoPage(),
   ];

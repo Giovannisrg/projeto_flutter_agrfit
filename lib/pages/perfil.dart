@@ -11,6 +11,7 @@ class PerfilPage extends StatelessWidget {
         title: const Text('Perfil'),
         foregroundColor: const Color.fromARGB(255, 226, 226, 226),
         backgroundColor: Colors.black,
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),

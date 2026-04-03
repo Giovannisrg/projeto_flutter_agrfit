@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'chatbot.dart';
-//import 'configuracao.dart';
+import 'configuracao.dart';
 import 'perfil.dart';
 import 'treino.dart';
 
@@ -19,7 +19,7 @@ class _NavBarPageState extends State<NavBarPage> {
     const TreinoPage(),
     const ChatbotPage(),
     const PerfilPage(),
-    //const ConfiguracaoPage(),
+    const ConfigPage(),
   ];
 
   @override

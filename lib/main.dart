@@ -1,8 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'pages/navbar.dart';
+import 'database/user_dao.dart';
+import 'database/db_helper.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 🔥 Inicializa o banco
+  await DBHelper.instance.database;
+
   runApp(const MainApp());
 }
 
@@ -86,7 +93,6 @@ class _LoginPageState extends State<LoginPage> {
               },
             ),
           ),
-
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -110,11 +116,11 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
 
+                    // 🔥 ALTERADO: Usuário → Email
                     const Text(
-                      'Usuário',
+                      'Email',
                       style: TextStyle(color: Colors.white70),
                     ),
                     const SizedBox(height: 5),
@@ -122,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _usuarioController,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        hintText: 'Digite o nome de usuário',
+                        hintText: 'Digite seu email',
                         hintStyle: const TextStyle(color: Colors.white38),
                         filled: true,
                         fillColor: Colors.grey[850],
@@ -179,22 +185,39 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        onPressed: () {
+
+                        // 🔥 AQUI ESTÁ A MUDANÇA REAL
+                        onPressed: () async {
                           if (_nomeUsuario.isEmpty || _senhaUsuario.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Preencha todos os campos'),
                               ),
                             );
-                          } else {
+                            return;
+                          }
+
+                          final user = await UserDAO().login(
+                            _nomeUsuario,
+                            _senhaUsuario,
+                          );
+
+                          if (user != null) {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const NavBarPage(),
                               ),
                             );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Usuário ou senha inválidos'),
+                              ),
+                            );
                           }
                         },
+
                         child: const Text('Login'),
                       ),
                     ),

@@ -6,7 +6,9 @@ import 'perfil.dart';
 import 'treino.dart';
 
 class NavBarPage extends StatefulWidget {
-  const NavBarPage({super.key});
+  final Map<String, dynamic> user;
+
+  const NavBarPage({super.key, required this.user});
 
   @override
   State<NavBarPage> createState() => _NavBarPageState();
@@ -15,12 +17,18 @@ class NavBarPage extends StatefulWidget {
 class _NavBarPageState extends State<NavBarPage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const TreinoPage(),
-    const ChatbotPage(),
-    const PerfilPage(),
-    const ConfigPage(),
-  ];
+  late final List<Widget> _pages;
+  @override
+  void initState() {
+    super.initState();
+
+    _pages = [
+      const TreinoPage(),
+      const ChatbotPage(),
+      PerfilPage(user: widget.user),
+      const ConfigPage(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

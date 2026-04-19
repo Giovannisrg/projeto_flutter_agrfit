@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'pages/navbar.dart';
+import 'pages/register_page.dart';
 import 'database/user_dao.dart';
 import 'database/db_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🔥 Inicializa o banco
   await DBHelper.instance.database;
 
   runApp(const MainApp());
@@ -118,7 +118,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // 🔥 ALTERADO: Usuário → Email
                     const Text(
                       'Email',
                       style: TextStyle(color: Colors.white70),
@@ -185,8 +184,6 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-
-                        // 🔥 AQUI ESTÁ A MUDANÇA REAL
                         onPressed: () async {
                           if (_nomeUsuario.isEmpty || _senhaUsuario.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -217,8 +214,25 @@ class _LoginPageState extends State<LoginPage> {
                             );
                           }
                         },
-
                         child: const Text('Login'),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+                    Center(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterPage(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Criar conta',
+                          style: TextStyle(color: Colors.white70),
+                        ),
                       ),
                     ),
                   ],

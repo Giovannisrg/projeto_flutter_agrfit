@@ -69,7 +69,6 @@ class DBHelper {
       )
     ''');
 
-    // 🔥 USUÁRIO PADRÃO PRA TESTE
     await db.insert('usuarios', {
       'nome': 'Admin',
       'email': 'admin@email.com',

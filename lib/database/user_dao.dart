@@ -1,4 +1,3 @@
-import 'package:sqflite/sqflite.dart';
 import 'db_helper.dart';
 
 class UserDAO {
@@ -16,5 +15,23 @@ class UserDAO {
     } else {
       return null;
     }
+  }
+
+  Future<String> criarUsuario(String nome, String email, String senha) async {
+    final db = await DBHelper.instance.database;
+
+    final existing = await db.query(
+      'usuarios',
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+
+    if (existing.isNotEmpty) {
+      return 'email_existente';
+    }
+
+    await db.insert('usuarios', {'nome': nome, 'email': email, 'senha': senha});
+
+    return 'sucesso';
   }
 }

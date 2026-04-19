@@ -34,4 +34,28 @@ class UserDAO {
 
     return 'sucesso';
   }
+
+  Future<int> atualizarUsuario(
+    int id,
+    String nome,
+    String email,
+    String peso,
+    String altura,
+    String idade,
+  ) async {
+    final db = await DBHelper.instance.database;
+
+    return await db.update(
+      'usuarios',
+      {
+        'nome': nome,
+        'email': email,
+        'peso': peso,
+        'altura': altura,
+        'idade': idade,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }

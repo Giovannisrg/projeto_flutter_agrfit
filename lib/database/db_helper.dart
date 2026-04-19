@@ -17,11 +17,7 @@ class DBHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(
-      path,
-      version: 2, // 🔥 aumentei a versão pra recriar o banco
-      onCreate: _createDB,
-    );
+    return await openDatabase(path, version: 3, onCreate: _createDB);
   }
 
   Future _createDB(Database db, int version) async {
@@ -31,6 +27,9 @@ class DBHelper {
         nome TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         senha TEXT NOT NULL,
+        peso TEXT,
+        altura TEXT,
+        idade TEXT,
         data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
         data_expiracao DATETIME
       )
@@ -73,6 +72,9 @@ class DBHelper {
       'nome': 'Admin',
       'email': 'admin@email.com',
       'senha': '123456',
+      'peso': '75',
+      'altura': '161',
+      'idade': '21',
     });
   }
 }

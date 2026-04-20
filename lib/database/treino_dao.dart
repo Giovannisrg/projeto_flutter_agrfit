@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:projeto_flutter_agrfit/database/db_helper.dart';
-import 'package:projeto_flutter_agrfit/database/exercicio_dao.dart';
 
 class TreinoDAO {
   Future<int> criarTreino(

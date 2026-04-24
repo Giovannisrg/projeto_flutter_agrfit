@@ -9,9 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^1.6.0
   path: ^1.9.1
-  shared_preferences: ^2.5.5
   sqflite: ^2.4.2
   sqflite_common_ffi: ^2.4.0+2
   shared_preferences: ^2.2.2
@@ -20,30 +18,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  flutter_launcher_icons: ^0.13.1
-  flutter_native_splash: ^2.4.0
 
 flutter:
   assets:
-    - assets/images/Icon.png
-    - assets/images/banner1.png
-    - assets/images/banner2.png
-    - assets/images/banner3.png
-    - assets/images/banner4.png
+    - assets/images/
   uses-material-design: true
-
-flutter_icons:
-  android: true
-  ios: true
-  image_path: "assets/images/Icon.png"
-
-flutter_native_splash:
-  color: "#000000" 
-  image: assets/images/Icon.png 
-
-  android: true
-  ios: true
-
-  android_12:
-    image: assets/images/Icon.png
-    icon_background_color: "#000000"

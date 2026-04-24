@@ -4,7 +4,6 @@ import 'pages/navbar.dart';
 import 'pages/register_page.dart';
 import 'database/user_dao.dart';
 import 'database/db_helper.dart';
-import 'services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,27 +18,9 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: FutureBuilder<Map<String, dynamic>?>(
-        future: AuthService.getUser(),
-        builder: (context, snapshot) {
-          // 🔄 carregando
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          final user = snapshot.data;
-
-          if (user != null) {
-            return NavBarPage(user: user);
-          }
-
-          return const LoginPage();
-        },
-      ),
+      home: LoginPage(),
     );
   }
 }
@@ -221,15 +202,16 @@ class _LoginPageState extends State<LoginPage> {
                           if (!mounted) return;
 
                           if (user != null) {
-                            String token = "token_${user['id']}";
-
-                            await AuthService.saveToken(token);
-                            await AuthService.saveUser(user);
-
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => NavBarPage(user: user),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Usuário ou senha inválidos'),
                               ),
                             );
                           }

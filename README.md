@@ -137,9 +137,3 @@ Desenvolver um aplicativo completo que integre conceitos de:
 ## Lincença
 
 Este projeto é acadêmico e desenvolvido para fins educacionais.
-
-instalar para auth_services:
-flutter pub add shared_preferences
-
-instalar para api_services:
-flutter pub add http

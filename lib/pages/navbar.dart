@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'chatbot.dart';
-import 'configuracao.dart';
-import 'perfil.dart';
-import 'treino.dart';
+import 'package:projeto_flutter_agrfit/pages/chatbot.dart';
+import 'package:projeto_flutter_agrfit/pages/configuracao.dart';
+import 'package:projeto_flutter_agrfit/pages/perfil.dart';
+import 'package:projeto_flutter_agrfit/pages/treino.dart';
+
 
 class NavBarPage extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -23,7 +24,7 @@ class _NavBarPageState extends State<NavBarPage> {
     super.initState();
 
     _pages = [
-      const TreinoPage(),
+      TreinoPage(user: widget.user),
       const ChatbotPage(),
       PerfilPage(user: widget.user),
       const ConfigPage(),

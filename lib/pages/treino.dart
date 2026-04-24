@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_flutter_agrfit/database/treino_dao.dart';
-import 'package:projeto_flutter_agrfit/database/exercicio_dao.dart';
 
 class TreinoPage extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -124,7 +123,6 @@ class _TreinoPageState extends State<TreinoPage> {
               'Seu treino de hoje 💪',
               style: TextStyle(color: Colors.white, fontSize: 20),
             ),
-
             const SizedBox(height: 20),
 
             treinos.isEmpty
@@ -234,24 +232,34 @@ class _TreinoPageState extends State<TreinoPage> {
                 Text(subtitulo, style: const TextStyle(color: Colors.white54)),
               ],
             ),
-            child: Icon(icon, color: Colors.purple),
-          ),
-          const SizedBox(width: 15),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                titulo,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(subtitulo, style: const TextStyle(color: Colors.white54)),
-            ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class ExecucaoTreinoPage extends StatelessWidget {
+  final Map treino;
+
+  const ExecucaoTreinoPage({super.key, required this.treino});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text(
+          treino['nome'] ?? 'Treino',
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.black,
+      ),
+      body: const Center(
+        child: Text(
+          'Execução do treino',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
   }

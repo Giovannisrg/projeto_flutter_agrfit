@@ -22,7 +22,6 @@ class DBHelper {
       version: 5,
       onCreate: _createDB,
 
-      // 🔥 CORREÇÃO AQUI
       onUpgrade: (db, oldVersion, newVersion) async {
         await db.execute('DROP TABLE IF EXISTS exercicios');
         await db.execute('DROP TABLE IF EXISTS treinos');

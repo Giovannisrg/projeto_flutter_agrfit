@@ -191,22 +191,8 @@ class _TreinoPageState extends State<TreinoPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Treino iniciado 💪')),
-                  );
-                },
-                child: const Text(
-                  'Iniciar treino',
-                  style: TextStyle(color: Colors.white),
-                ),
+                onPressed: criarTreinoDialog,
+                child: const Text('Criar treino'),
               ),
             ),
           ],
@@ -234,24 +220,130 @@ class _TreinoPageState extends State<TreinoPage> {
                 Text(subtitulo, style: const TextStyle(color: Colors.white54)),
               ],
             ),
-            child: Icon(icon, color: Colors.purple),
-          ),
-          const SizedBox(width: 15),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                titulo,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(subtitulo, style: const TextStyle(color: Colors.white54)),
-            ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class ExecucaoTreinoPage extends StatefulWidget {
+  final Map treino;
+
+  const ExecucaoTreinoPage({super.key, required this.treino});
+
+  @override
+  State<ExecucaoTreinoPage> createState() => _ExecucaoTreinoPageState();
+}
+
+class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
+  final ExercicioDAO dao = ExercicioDAO();
+  List<Map<String, dynamic>> exercicios = [];
+
+  @override
+  void initState() {
+    super.initState();
+    carregar();
+  }
+
+  Future<void> carregar() async {
+    final data = await dao.listarExercicios(widget.treino['id']);
+
+    if (!mounted) return;
+
+    setState(() {
+      exercicios = data;
+    });
+  }
+
+  Future<void> toggle(Map ex) async {
+    final novo = ex['concluido'] == 1 ? 0 : 1;
+    await dao.marcarConcluido(ex['id'], novo);
+    carregar();
+  }
+
+  double progresso() {
+    if (exercicios.isEmpty) return 0;
+    final feitos = exercicios.where((e) => e['concluido'] == 1).length;
+    return feitos / exercicios.length;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text(widget.treino['nome'] ?? 'Treino'),
+        backgroundColor: Colors.black,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            LinearProgressIndicator(
+              value: progresso(),
+              color: Colors.purple,
+              backgroundColor: Colors.grey[800],
+            ),
+
+            const SizedBox(height: 20),
+
+            exercicios.isEmpty
+                ? const Text('Nenhum exercício', style: TextStyle(color: Colors.white54))
+                : Expanded(
+                    child: ListView.builder(
+                      itemCount: exercicios.length,
+                      itemBuilder: (_, i) {
+                        final ex = exercicios[i];
+                        final feito = ex['concluido'] == 1;
+
+                        return GestureDetector(
+                          onTap: () => toggle(ex),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.play_arrow, color: Colors.purple),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    ex['nome'],
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      decoration: feito ? TextDecoration.lineThrough : null,
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  feito ? Icons.check_circle : Icons.circle_outlined,
+                                  color: feito ? Colors.purple : Colors.white38,
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+            ElevatedButton(
+              onPressed: () async {
+                await dao.inserirExercicio(
+                  widget.treino['id'],
+                  'Novo exercício',
+                  '',
+                );
+                carregar();
+              },
+              child: const Text('Adicionar exercício'),
+            )
+          ],
+        ),
       ),
     );
   }

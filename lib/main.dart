@@ -218,6 +218,8 @@ class _LoginPageState extends State<LoginPage> {
                             _senhaUsuario,
                           );
 
+                          if (!mounted) return;
+
                           if (user != null) {
                             String token = "token_${user['id']}";
 
@@ -236,7 +238,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
+
                     Center(
                       child: TextButton(
                         onPressed: () {
@@ -249,7 +252,10 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         child: const Text(
                           'Criar conta',
-                          style: TextStyle(color: Colors.white70),
+                          style: TextStyle(
+                            color: Colors.purple,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),

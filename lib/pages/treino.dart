@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class TreinoPage extends StatelessWidget {
@@ -9,10 +8,7 @@ class TreinoPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          'Treino',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Treino', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         centerTitle: true,
         elevation: 0,
@@ -69,9 +65,7 @@ class TreinoPage extends StatelessWidget {
                 ),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Treino iniciado 💪'),
-                    ),
+                    const SnackBar(content: Text('Treino iniciado 💪')),
                   );
                 },
                 child: const Text(
@@ -115,10 +109,7 @@ class TreinoPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
-                subtitulo,
-                style: const TextStyle(color: Colors.white54),
-              ),
+              Text(subtitulo, style: const TextStyle(color: Colors.white54)),
             ],
           ),
           const Spacer(),

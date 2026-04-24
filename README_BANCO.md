@@ -118,3 +118,4 @@ SELECT * FROM usuarios;
 ### adb não reconhecido
 
 * Adicione ao PATH ou use `.\adb`
+..

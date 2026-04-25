@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projeto_flutter_agrfit/database/treino_dao.dart';
+import 'package:projeto_flutter_agrfit/database/exercicio_dao.dart';
 
 class TreinoPage extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -105,6 +106,38 @@ class _TreinoPageState extends State<TreinoPage> {
     );
   }
 
+  Future<void> excluirTreino(Map treino) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text('Excluir treino', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Tem certeza que deseja excluir esse treino?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      await treinoDAO.deletarTreino(treino['id']);
+
+      if (!mounted) return;
+
+      carregarTreinos();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -163,10 +196,9 @@ class _TreinoPageState extends State<TreinoPage> {
                                     ),
                                     ListTile(
                                       title: const Text('Excluir', style: TextStyle(color: Colors.red)),
-                                      onTap: () async {
-                                        await treinoDAO.deletarTreino(treino['id']);
+                                      onTap: () {
                                         Navigator.pop(context);
-                                        carregarTreinos();
+                                        excluirTreino(treino);
                                       },
                                     ),
                                   ],
@@ -189,22 +221,8 @@ class _TreinoPageState extends State<TreinoPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Treino iniciado 💪')),
-                  );
-                },
-                child: const Text(
-                  'Iniciar treino',
-                  style: TextStyle(color: Colors.white),
-                ),
+                onPressed: criarTreinoDialog,
+                child: const Text('Criar treino'),
               ),
             ),
           ],
@@ -239,26 +257,150 @@ class _TreinoPageState extends State<TreinoPage> {
   }
 }
 
-class ExecucaoTreinoPage extends StatelessWidget {
+class ExecucaoTreinoPage extends StatefulWidget {
   final Map treino;
 
   const ExecucaoTreinoPage({super.key, required this.treino});
+
+  @override
+  State<ExecucaoTreinoPage> createState() => _ExecucaoTreinoPageState();
+}
+
+class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
+  final ExercicioDAO dao = ExercicioDAO();
+
+  final List<String> exerciciosPadrao = [
+    'Agachamento Búlgaro',
+    'Remada Curvada',
+    'Supino Reto',
+    'Leg Press',
+    'Elevação Lateral',
+  ];
+
+  List<Map<String, dynamic>> exercicios = [];
+
+  @override
+  void initState() {
+    super.initState();
+    carregar();
+  }
+
+  Future<void> carregar() async {
+    final data = await dao.listarExercicios(widget.treino['id']);
+
+    if (!mounted) return;
+
+    setState(() {
+      exercicios = data;
+    });
+  }
+
+  Future<void> toggle(Map ex) async {
+    final novo = ex['concluido'] == 1 ? 0 : 1;
+    await dao.marcarConcluido(ex['id'], novo);
+    carregar();
+  }
+
+  double progresso() {
+    if (exercicios.isEmpty) return 0;
+    final feitos = exercicios.where((e) => e['concluido'] == 1).length;
+    return feitos / exercicios.length;
+  }
+
+  Future<void> adicionarExercicio() async {
+    final selecionado = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.grey[900],
+      builder: (_) {
+        return ListView(
+          children: exerciciosPadrao.map((nome) {
+            return ListTile(
+              title: Text(nome, style: const TextStyle(color: Colors.white)),
+              onTap: () => Navigator.pop(context, nome),
+            );
+          }).toList(),
+        );
+      },
+    );
+
+    if (selecionado != null) {
+      await dao.inserirExercicio(
+        widget.treino['id'],
+        selecionado,
+        '',
+      );
+      carregar();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(
-          treino['nome'] ?? 'Treino',
-          style: const TextStyle(color: Colors.white),
-        ),
+        title: Text(widget.treino['nome'] ?? 'Treino'),
         backgroundColor: Colors.black,
       ),
-      body: const Center(
-        child: Text(
-          'Execução do treino',
-          style: TextStyle(color: Colors.white),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            LinearProgressIndicator(
+              value: progresso(),
+              color: Colors.purple,
+              backgroundColor: Colors.grey[800],
+            ),
+
+            const SizedBox(height: 20),
+
+            exercicios.isEmpty
+                ? const Text('Nenhum exercício', style: TextStyle(color: Colors.white54))
+                : Expanded(
+                    child: ListView.builder(
+                      itemCount: exercicios.length,
+                      itemBuilder: (_, i) {
+                        final ex = exercicios[i];
+                        final feito = ex['concluido'] == 1;
+
+                        return GestureDetector(
+                          onTap: () => toggle(ex),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.play_arrow, color: Colors.purple),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    ex['nome'],
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      decoration: feito ? TextDecoration.lineThrough : null,
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  feito ? Icons.check_circle : Icons.circle_outlined,
+                                  color: feito ? Colors.purple : Colors.white38,
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+            ElevatedButton(
+              onPressed: adicionarExercicio,
+              child: const Text('Adicionar exercício'),
+            )
+          ],
         ),
       ),
     );

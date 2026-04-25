@@ -85,10 +85,8 @@ class _TreinoPageState extends State<TreinoPage> {
                   items: frequencias.map((f) {
                     return DropdownMenuItem<int>(
                       value: f['id'] as int,
-                      child: Text(
-                        '${f['dias_por_semana']} dias',
-                        style: const TextStyle(color: Colors.white),
-                      ),
+                      child: Text('${f['dias_por_semana']} dias',
+                          style: const TextStyle(color: Colors.white)),
                     );
                   }).toList(),
                   onChanged: (v) => setState(() => frequenciaId = v),
@@ -109,22 +107,31 @@ class _TreinoPageState extends State<TreinoPage> {
                     return;
                   }
 
-                  final treinoId = await treinoDAO.criarTreino(
-                    widget.user['id'],
-                    objetivoId!,
-                    professorId!,
-                    frequenciaId!,
-                    'Treino automático',
-                  );
+                  final grupos = ['Peito', 'Costas', 'Pernas'];
 
-                  final modelos = await listas.exerciciosPorObjetivo(objetivoId!);
-
-                  for (var m in modelos) {
-                    await ExercicioDAO().inserirExercicio(
-                      treinoId,
-                      m['nome'],
-                      '',
+                  for (var grupo in grupos) {
+                    final treinoId = await treinoDAO.criarTreino(
+                      widget.user['id'],
+                      objetivoId!,
+                      professorId!,
+                      frequenciaId!,
+                      'Treino: $grupo',
                     );
+
+                    final modelos = await listas.exerciciosPorObjetivo(objetivoId!);
+
+                    final filtrados =
+                        modelos.where((e) => e['grupo_muscular'] == grupo).toList();
+
+                    for (var m in filtrados) {
+                      await ExercicioDAO().inserirExercicio(
+                        treinoId,
+                        m['nome'],
+                        '',
+                        m['series'],
+                        m['reps'],
+                      );
+                    }
                   }
 
                   if (!mounted) return;
@@ -215,7 +222,7 @@ class _TreinoPageState extends State<TreinoPage> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const Text('Seu treino 💪', style: TextStyle(color: Colors.white, fontSize: 20)),
+            const Text('Seus treinos 💪', style: TextStyle(color: Colors.white, fontSize: 20)),
             const SizedBox(height: 20),
 
             treinos.isEmpty
@@ -227,48 +234,29 @@ class _TreinoPageState extends State<TreinoPage> {
                         final treino = treinos[i];
 
                         return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => ExecucaoTreinoPage(treino: treino),
                               ),
                             );
-                          },
-                          onLongPress: () {
-                            showModalBottomSheet(
-                              context: context,
-                              backgroundColor: Colors.grey[900],
-                              builder: (_) => Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ListTile(
-                                    title: const Text('Editar', style: TextStyle(color: Colors.white)),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      editarTreino(treino);
-                                    },
-                                  ),
-                                  ListTile(
-                                    title: const Text('Excluir', style: TextStyle(color: Colors.red)),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      excluirTreino(treino);
-                                    },
-                                  ),
-                                ],
-                              ),
-                            );
+
+                            if (result == true) carregarTreinos();
                           },
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(15),
                             decoration: BoxDecoration(
-                              color: Colors.grey[900],
+                              color: treino['finalizado'] == 1
+                                  ? Colors.green
+                                  : Colors.grey[900],
                               borderRadius: BorderRadius.circular(15),
                             ),
                             child: Text(
-                              treino['nome'],
+                              treino['finalizado'] == 1
+                                  ? '${treino['nome']} ✅'
+                                  : treino['nome'],
                               style: const TextStyle(color: Colors.white),
                             ),
                           ),
@@ -306,6 +294,10 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
   Timer? timer;
   bool iniciado = false;
 
+  int descanso = 0;
+  Timer? descansoTimer;
+  bool descansando = false;
+
   @override
   void initState() {
     super.initState();
@@ -315,6 +307,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
   @override
   void dispose() {
     timer?.cancel();
+    descansoTimer?.cancel();
     super.dispose();
   }
 
@@ -336,9 +329,49 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
     });
   }
 
-  void finalizarTreino() {
-    timer?.cancel();
-    setState(() => iniciado = false);
+  void iniciarDescanso() {
+    setState(() {
+      descansando = true;
+      descanso = 60;
+    });
+
+    descansoTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (descanso == 0) {
+        t.cancel();
+        setState(() => descansando = false);
+      } else {
+        setState(() => descanso--);
+      }
+    });
+  }
+
+  void finalizarTreino() async {
+  timer?.cancel();
+
+  await TreinoDAO().marcarFinalizado(widget.treino['id']);
+
+  if (!mounted) return;
+
+  await showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      backgroundColor: Colors.grey[900],
+      title: const Text('Treino finalizado 🎉',
+          style: TextStyle(color: Colors.white)),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); // fecha popup
+          },
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
+
+  if (!mounted) return;
+
+  Navigator.pop(context, true); // volta pra lista
   }
 
   @override
@@ -356,12 +389,22 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
             style: const TextStyle(color: Colors.white, fontSize: 30),
           ),
 
+          if (descansando)
+            Text('Descanso: $descanso s',
+                style: const TextStyle(color: Colors.white)),
+
           Row(
             children: [
               Expanded(
                 child: ElevatedButton(
                   onPressed: iniciado ? null : iniciarTreino,
                   child: const Text('Iniciar'),
+                ),
+              ),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: iniciarDescanso,
+                  child: const Text('Descansar'),
                 ),
               ),
               Expanded(
@@ -382,7 +425,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
 
                 return ListTile(
                   title: Text(
-                    ex['nome'],
+                    '${ex['nome']} - ${ex['series'] ?? ''}x${ex['reps'] ?? ''}',
                     style: TextStyle(
                       color: Colors.white,
                       decoration: feito ? TextDecoration.lineThrough : null,

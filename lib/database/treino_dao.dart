@@ -54,7 +54,6 @@ class TreinoDAO {
     );
   }
 
-  // 🔥 EXTRA (opcional, mas MUITO útil depois)
   Future<Map<String, dynamic>?> buscarTreinoPorId(int id) async {
     final db = await DBHelper.instance.database;
 

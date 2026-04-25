@@ -1,7 +1,13 @@
 import 'db_helper.dart';
 
 class ExercicioDAO {
-  Future<int> inserirExercicio(int treinoId, String nome, String videoUrl) async {
+  Future<int> inserirExercicio(
+    int treinoId,
+    String nome,
+    String videoUrl,
+    int series,
+    int reps,
+  ) async {
     final db = await DBHelper.instance.database;
 
     return await db.insert('exercicios', {
@@ -9,6 +15,8 @@ class ExercicioDAO {
       'nome': nome,
       'video_url': videoUrl,
       'concluido': 0,
+      'series': series,
+      'reps': reps,
     });
   }
 
@@ -36,6 +44,10 @@ class ExercicioDAO {
   Future<void> deletarExercicio(int id) async {
     final db = await DBHelper.instance.database;
 
-    await db.delete('exercicios', where: 'id = ?', whereArgs: [id]);
+    await db.delete(
+      'exercicios',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

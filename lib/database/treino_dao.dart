@@ -18,6 +18,7 @@ class TreinoDAO {
         'professor_id': professorId,
         'frequencia_id': frequenciaId,
         'nome': nome,
+        'finalizado': 0,
       },
     );
   }
@@ -29,7 +30,7 @@ class TreinoDAO {
       'treinos',
       where: 'usuario_id = ?',
       whereArgs: [usuarioId],
-      orderBy: 'id DESC', // 🔥 mais recente primeiro
+      orderBy: 'id DESC',
     );
   }
 
@@ -47,8 +48,25 @@ class TreinoDAO {
   Future<int> deletarTreino(int id) async {
     final db = await DBHelper.instance.database;
 
+    await db.delete(
+      'exercicios',
+      where: 'treino_id = ?',
+      whereArgs: [id],
+    );
+
     return await db.delete(
       'treinos',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> marcarFinalizado(int id) async {
+    final db = await DBHelper.instance.database;
+
+    await db.update(
+      'treinos',
+      {'finalizado': 1},
       where: 'id = ?',
       whereArgs: [id],
     );

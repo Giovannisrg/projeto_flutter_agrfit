@@ -19,7 +19,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         await db.execute('DROP TABLE IF EXISTS exercicios');
@@ -29,11 +29,10 @@ class DBHelper {
         await db.execute('DROP TABLE IF EXISTS objetivos');
         await db.execute('DROP TABLE IF EXISTS usuarios');
         await db.execute('DROP TABLE IF EXISTS exercicios_modelo');
-
         await _createDB(db, newVersion);
       },
       onOpen: (db) async {
-        await _seed(db); // add dados automaticamente
+        await _seed(db);
       },
     );
   }
@@ -82,6 +81,7 @@ class DBHelper {
         professor_id INTEGER,
         frequencia_id INTEGER,
         nome TEXT,
+        finalizado INTEGER DEFAULT 0,
         data_inicio DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
       )
@@ -94,6 +94,8 @@ class DBHelper {
         nome TEXT NOT NULL,
         video_url TEXT,
         concluido INTEGER DEFAULT 0,
+        series INTEGER,
+        reps INTEGER,
         FOREIGN KEY (treino_id) REFERENCES treinos(id)
       )
     ''');
@@ -102,11 +104,13 @@ class DBHelper {
       CREATE TABLE exercicios_modelo (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT NOT NULL,
-        objetivo_id INTEGER
+        objetivo_id INTEGER,
+        grupo_muscular TEXT,
+        series INTEGER,
+        reps INTEGER
       )
     ''');
 
-    // usuário padrão
     await db.insert('usuarios', {
       'nome': 'Admin',
       'email': 'admin@email.com',
@@ -140,35 +144,46 @@ class DBHelper {
 
     final modelos = await db.query('exercicios_modelo');
     if (modelos.isEmpty) {
-      // objetivo 1 = Emagrecimento
-      await db.insert('exercicios_modelo', {
-        'nome': 'Corrida',
-        'objetivo_id': 1
-      });
-      await db.insert('exercicios_modelo', {
-        'nome': 'Bike',
-        'objetivo_id': 1
-      });
+      final exercicios = [
+        {'nome': 'Supino Reto', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 4, 'reps': 10},
+        {'nome': 'Supino Inclinado', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 4, 'reps': 10},
+        {'nome': 'Crossover', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 12},
+        {'nome': 'Flexão', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 15},
 
-      // objetivo 2 = Fortalecimento
-      await db.insert('exercicios_modelo', {
-        'nome': 'Agachamento Búlgaro',
-        'objetivo_id': 2
-      });
-      await db.insert('exercicios_modelo', {
-        'nome': 'Remada Curvada',
-        'objetivo_id': 2
-      });
+        {'nome': 'Puxada Frente', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 4, 'reps': 10},
+        {'nome': 'Remada Curvada', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 4, 'reps': 10},
+        {'nome': 'Remada Máquina', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 12},
+        {'nome': 'Pulldown', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 12},
 
-      // objetivo 3 = Hipertrofia
-      await db.insert('exercicios_modelo', {
-        'nome': 'Supino Reto',
-        'objetivo_id': 3
-      });
-      await db.insert('exercicios_modelo', {
-        'nome': 'Leg Press',
-        'objetivo_id': 3
-      });
+        {'nome': 'Agachamento', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 4, 'reps': 10},
+        {'nome': 'Leg Press', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 4, 'reps': 12},
+        {'nome': 'Cadeira Extensora', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 12},
+        {'nome': 'Cadeira Flexora', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 12},
+
+        {'nome': 'Elevação Pélvica', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 4, 'reps': 12},
+        {'nome': 'Abdução', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 15},
+        {'nome': 'Coice', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 15},
+        {'nome': 'Glúteo Máquina', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 12},
+
+        {'nome': 'Desenvolvimento', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 4, 'reps': 10},
+        {'nome': 'Elevação Lateral', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 3, 'reps': 12},
+        {'nome': 'Elevação Frontal', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 3, 'reps': 12},
+        {'nome': 'Arnold Press', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 3, 'reps': 10},
+
+        {'nome': 'Rosca Direta', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 12},
+        {'nome': 'Rosca Alternada', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 12},
+        {'nome': 'Rosca Scott', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 10},
+        {'nome': 'Rosca Concentrada', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 10},
+
+        {'nome': 'Tríceps Corda', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 12},
+        {'nome': 'Tríceps Testa', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 10},
+        {'nome': 'Tríceps Banco', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 12},
+        {'nome': 'Tríceps Francês', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 10},
+      ];
+
+      for (var ex in exercicios) {
+        await db.insert('exercicios_modelo', ex);
+      }
     }
   }
 }

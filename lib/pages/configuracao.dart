@@ -172,10 +172,14 @@ class _ConfigPageState extends State<ConfigPage> {
     );
   }
 
-  void _logout(BuildContext context) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const MainApp()),
+  void _logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    if (!mounted) return;
+
+    Navigator.of(this.context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const MainApp()),
       (route) => false,
     );
   }

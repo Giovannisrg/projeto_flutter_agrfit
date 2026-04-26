@@ -30,7 +30,7 @@ class TreinoDAO {
       'treinos',
       where: 'usuario_id = ?',
       whereArgs: [usuarioId],
-      orderBy: 'id DESC',
+      orderBy: 'id ASC',
     );
   }
 

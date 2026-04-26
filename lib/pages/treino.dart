@@ -157,15 +157,20 @@ String traduzirGrupo(String grupo) {
 
                   final grupos = gerarDivisao(dias);
 
+                  final letras = ['A', 'B', 'C', 'D', 'E'];
+
                   final modelos = await listas.exerciciosPorObjetivo(objetivoId!);
 
-                  for (var grupo in grupos) {
+                  for (int i = 0; i < grupos.length; i++) {
+                    final grupo = grupos[i];
+                    final letra = letras[i];
+
                     final treinoId = await treinoDAO.criarTreino(
                       widget.user['id'],
                       objetivoId!,
                       professorId!,
                       frequenciaId!,
-                      'Treino: ${traduzirGrupo(grupo)}',
+                      'Treino $letra: ${traduzirGrupo(grupo)}s',
                     );
 
                     final gruposMusculares = mapearGrupo(grupo);

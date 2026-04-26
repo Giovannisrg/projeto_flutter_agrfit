@@ -78,12 +78,16 @@ class _ChatbotPageState extends State<ChatbotPage> {
         padding: const EdgeInsets.all(12),
         constraints: const BoxConstraints(maxWidth: 250),
         decoration: BoxDecoration(
-          color: isUser ? Colors.purple : Colors.grey[900],
+          color: isUser ? Colors.white : Colors.grey[900],
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           texto,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: isUser
+                ? Colors.purple // texto do usuário
+                : Colors.white, // texto do chatbot
+          ),
         ),
       ),
     );
@@ -94,7 +98,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
       margin: const EdgeInsets.all(12),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.purple,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
@@ -102,17 +106,17 @@ class _ChatbotPageState extends State<ChatbotPage> {
           Expanded(
             child: TextField(
               controller: _controller,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.purple),
               decoration: const InputDecoration(
                 hintText: 'Digite sua mensagem...',
-                hintStyle: TextStyle(color: Colors.white70),
+                hintStyle: TextStyle(color: Colors.purple),
                 border: InputBorder.none,
               ),
             ),
           ),
           GestureDetector(
             onTap: enviarMensagem,
-            child: const Icon(Icons.send, color: Colors.white),
+            child: const Icon(Icons.send, color: Colors.purple),
           ),
         ],
       ),

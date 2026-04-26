@@ -368,10 +368,26 @@ String traduzirGrupo(String grupo) {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.purple,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  minimumSize: const Size(0, 40),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
                 onPressed: criarTreinoWizard,
-                child: const Text('Criar treino'),
+                child: const Text(
+                  'Criar treino',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -409,6 +425,19 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
     final m = (s ~/ 60).toString().padLeft(2, '0');
     final sec = (s % 60).toString().padLeft(2, '0');
     return '$m:$sec';
+  }
+
+  ButtonStyle botaoBrancoRoxo() {
+  return ElevatedButton.styleFrom(
+    backgroundColor: Colors.white,
+    foregroundColor: Colors.purple,
+    elevation: 0,
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    minimumSize: const Size(0, 45),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(25),
+    ),
+  );
   }
 
   @override
@@ -533,6 +562,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
+              style: botaoBrancoRoxo(),
               onPressed: iniciado ? iniciarDescanso : null,
               child: const Text('Descansar'),
             ),
@@ -572,6 +602,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
+              style: botaoBrancoRoxo(),
               onPressed: iniciado ? finalizarTreino : iniciarTreino,
               child: Text(iniciado ? 'Finalizar' : 'Iniciar'),
             ),

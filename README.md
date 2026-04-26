@@ -1,145 +1,226 @@
-# Olá!
+# 💪 AGR Fit
 
-Este é um repositório para um projeto acadêmico que foi desenvolvido por três integrantes. Ana, Giovanni e Rafaela.
-
-Sinta-se à vontade para se inspirar neste projeto. Mas não copie nada sem autorização. 
-
-Qualquer contribuição e crítica construtiva é bem-vinda!
+Aplicativo mobile desenvolvido em **Flutter/Dart** para gerenciamento inteligente de treinos, com persistência local, simulação de API com autenticação via token e geração automática de treinos personalizados.
 
 ---
 
-# AGR Fit
+# 👥 Integrantes
 
-Aplicativo mobile desenvolvido em Flutter/Dart para gerenciamento de treinos, com autenticação de usuários e integração com inteligência artificial para assistência personalizada.
-
----
-
-## Sobre o Projeto
-
-O AGR Fit é um aplicativo voltado para auxiliar usuários no acompanhamento de seus treinos de forma prática e inteligente. Ele oferece recursos como personalização de treinos, controle de acesso por mensalidade e suporte com inteligência artificial para melhorar a experiência do usuário.
+* Ana Júlia Morais Moreira — RA: 2405838
+* Rafaela da Silva — RA: 2411652
+* Giovanni S. R. Gemignani — RA: 2411209
 
 ---
 
-## Funcionalidades
+# 📱 Sobre o Projeto
 
-- Autenticação de usuários
-- Controle de acesso baseado na validade da mensalidade
-- CRUD de treinos organizados por dias da semana
-- Personalização de treinos:
-  - Professor
-  - Objetivo
-  - Frequência
-- Chat com Inteligência Artificial:
-  - Dúvidas
-  - Recomendações personalizadas
-- Exibição de vídeos demonstrativos de exercícios
-- Tela de configurações
-- Upload de imagens (treino do dia)
+O **AGR Fit** é um aplicativo que permite ao usuário:
+
+* Criar e gerenciar treinos personalizados
+* Executar treinos com cronômetro e controle de exercícios
+* Armazenar dados localmente com SQLite
+* Simular autenticação com token
+* Consumir API REST (simulada)
+
+O foco do projeto é aplicar conceitos reais de desenvolvimento mobile com **arquitetura organizada e escalável**.
 
 ---
 
-## Tecnologias Utilizadas
+# ⚙️ Funcionalidades
 
-- Flutter
-- Dart
-- SQLite (armazenamento local)
-- API REST
-- JWT (autenticação)
-- Integração com IA
-- Armazenamento de arquivos e imagens
+## 🔐 Autenticação
+
+* Cadastro e login de usuários
+* Persistência de sessão com **SharedPreferences**
+* Armazenamento de token local
 
 ---
 
-## Planejamento Técnico (Cronograma)
+## 🏋️ Treinos Inteligentes
 
-| Data       | Conteúdo Técnico |
-|------------|-----------------|
-| 30/03      | Navegação entre telas |
-| 13/04      | SQLite (armazenamento local) |
-| 20/04      | API + JWT (autenticação e mensalidade) |
-| 27/04      | Integração com IA |
-| 04/05      | Processos em background (validação e notificações) |
-| 11/05      | Manipulação de arquivos e cache |
-| 18/05      | Câmera/Galeria (upload de imagens) |
+* Criação automática baseada em:
+
+  * Objetivo
+  * Frequência
+  * Professor
+* Divisão automática:
+
+  * Push / Pull / Legs
+  * Upper / Lower
+* Geração sem repetição de exercícios
 
 ---
 
-## Estrutura do Projeto 
+## 📊 Execução de Treino
+
+* Cronômetro em tempo real
+* Controle de descanso
+* Marcação de exercícios
+* Finalização de treino
+
+---
+
+## 👤 Perfil
+
+* Edição de dados do usuário
+* Persistência no banco local
+
+---
+
+## 🤖 Chatbot (Simulação)
+
+* Interface de chat
+* Assistente de treino simulado
+
+---
+
+## ⚙️ Configurações
+
+* Controle de notificações
+* Tela de ajuda e privacidade
+* Logout com limpeza de sessão
+
+---
+
+## 🌐 API (Simulada)
+
+* Consumo via HTTP
+* Métodos:
+
+  * GET
+  * POST
+  * PUT
+  * DELETE
+* Autenticação via **Bearer Token**
+
+---
+
+# 🧠 Arquitetura
+
+```plaintext
 lib/
-├── models/
-├── services/
-├── screens/
-├── widgets/
-├── database/
-├── utils/
-└── main.dart
+├── pages/        → Interface
+├── services/     → API / Auth
+├── database/     → DAO / SQLite
+├── main.dart
+```
 
+### Fluxo:
 
----
-
-## Regras de Negócio
-
-- Usuários só podem acessar funcionalidades se a mensalidade estiver ativa
-- Treinos devem ser organizados por dias da semana
-- A IA deve fornecer respostas contextualizadas ao treino do usuário
-- Upload de imagens será utilizado para acompanhamento diário
+```plaintext
+UI → Services → DAO → Banco
+```
 
 ---
 
-## Integrantes
+# 🗄️ Banco de Dados
 
-- Ana Júlia Morais Moreira — RA: 2405838  
-- Rafaela da Silva — RA: 2411652  
-- Giovanni S. R. Gemignani — RA: 2411209  
+O aplicativo utiliza **SQLite local**, criado automaticamente ao iniciar o app.
 
----
+### Tabelas principais:
 
-## Objetivo
+* usuarios
+* treinos
+* exercicios
+* professores
+* objetivos
+* frequencias
 
-Desenvolver um aplicativo completo que integre conceitos de:
-- Desenvolvimento mobile
-- Banco de dados local
-- APIs e autenticação
-- Inteligência artificial
-- Manipulação de arquivos e mídia
+### Características:
 
----
-
-## Futuras Melhorias
-
-- Integração com dispositivos wearable
-- Dashboard com evolução do usuário
-- Sistema de notificações inteligentes
-- Plano de treino automático via IA
+* Criação automática
+* Controle de versão
+* Seed inicial de dados
+* Relacionamento entre entidades
 
 ---
 
-## Como Executar o Projeto
+## 🔧 Acesso manual (opcional)
 
-1. Clone o repositório:
+Para inspeção ou debug do banco:
 
-    ```git clone https://github.com/Giovannisrg/projeto_flutter_agrfit```
+```bash
+adb pull /data/user/0/com.example.projeto_flutter_agrfit/databases/agrfit.db
+sqlite3 agrfit.db
+```
 
-2. Acesse a pasta:
+Comandos úteis:
 
-    ```cd projeto_flutter_agrfit```
-
-3. Instale as dependências:
-
-    ```flutter pub get```
-
-4. Execute o projeto:
-
-    ```flutter run```
+```sql
+.tables
+SELECT * FROM usuarios;
+```
 
 ---
 
-## Lincença
+# 🔐 Autenticação
 
-Este projeto é acadêmico e desenvolvido para fins educacionais.
+* Token simulado salvo localmente
+* Sessão persistida com SharedPreferences
+* Login automático
 
-instalar para auth_services:
-flutter pub add shared_preferences
+---
 
-instalar para api_services:
-flutter pub add http
+# 🧪 API de Teste
+
+```plaintext
+https://jsonplaceholder.typicode.com
+```
+
+---
+
+# 🛠️ Tecnologias
+
+* Flutter
+* Dart
+* SQLite (sqflite)
+* SharedPreferences
+* HTTP
+
+---
+
+# ▶️ Como Executar
+
+```bash
+git clone https://github.com/Giovannisrg/projeto_flutter_agrfit
+cd projeto_flutter_agrfit
+flutter pub get
+flutter run
+```
+
+---
+
+# 🔑 Usuário de Teste
+
+```plaintext
+Email: admin@email.com
+Senha: 123456
+```
+
+---
+
+# 🚀 Diferenciais
+
+* Arquitetura em camadas
+* Geração automática de treinos
+* Execução com cronômetro
+* Persistência completa
+* Organização profissional
+
+---
+
+# 📌 Objetivo Acadêmico
+
+Aplicar conceitos de:
+
+* Mobile
+* Banco de dados
+* API
+* Autenticação
+* Arquitetura
+
+---
+
+# 📄 Licença
+
+Projeto acadêmico para fins educacionais.

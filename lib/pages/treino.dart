@@ -63,8 +63,11 @@ String traduzirGrupo(String grupo) {
 
     if (!mounted) return;
 
+    final ativos = data.where((t) => t['finalizado'] == 0).toList();
+    final finalizados = data.where((t) => t['finalizado'] == 1).toList();
+
     setState(() {
-      treinos = data;
+      treinos = [...ativos, ...finalizados];
     });
   }
 
@@ -145,13 +148,14 @@ String traduzirGrupo(String grupo) {
                   final freq = frequencias.firstWhere((f) => f['id'] == frequenciaId);
                   final dias = freq['dias_por_semana'];
 
-                  final divisao = {
-                    3: ['Push', 'Pull', 'Legs'],
-                    4: ['Upper', 'Lower', 'Push', 'Pull'],
-                    5: ['Peito', 'Costas', 'Pernas', 'Ombro', 'Braço'],
-                  };
+                  List<String> gerarDivisao(int dias) {
+                    if (dias == 3) return ['Push', 'Pull', 'Legs'];
+                    if (dias == 4) return ['Upper', 'Lower', 'Upper', 'Lower'];
+                    if (dias == 5) return ['Push', 'Pull', 'Legs', 'Upper', 'Lower'];
+                    return ['Full'];
+                  }
 
-                  final grupos = divisao[dias] ?? ['Peito', 'Costas', 'Pernas'];
+                  final grupos = gerarDivisao(dias);
 
                   final modelos = await listas.exerciciosPorObjetivo(objetivoId!);
 
@@ -178,7 +182,15 @@ String traduzirGrupo(String grupo) {
 
                     filtrados.shuffle();
 
-                    for (var m in filtrados.take(4)) {
+                    final usados = <String>{};
+
+                    final selecionados = filtrados.where((e) {
+                      if (usados.contains(e['nome'])) return false;
+                      usados.add(e['nome']);
+                      return true;
+                    }).take(4).toList();
+
+                    for (var m in selecionados) {
                       await ExercicioDAO().inserirExercicio(
                         treinoId,
                         m['nome'],
@@ -187,13 +199,13 @@ String traduzirGrupo(String grupo) {
                         m['reps'],
                       );
                     }
-                  }
+                    }
 
-                  if (!mounted) return;
+                    if (!mounted) return;
 
-                  Navigator.pop(context);
-                  carregarTreinos();
-                },
+                    Navigator.pop(context);
+                    carregarTreinos();
+                                    },
                 child: const Text('Criar'),
               ),
             ],
@@ -376,7 +388,8 @@ class ExecucaoTreinoPage extends StatefulWidget {
   State<ExecucaoTreinoPage> createState() => _ExecucaoTreinoPageState();
 }
 
-class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
+class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
+    with SingleTickerProviderStateMixin {
   final ExercicioDAO dao = ExercicioDAO();
 
   List<Map<String, dynamic>> exercicios = [];
@@ -389,9 +402,28 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
   Timer? descansoTimer;
   bool descansando = false;
 
+  late AnimationController controller;
+  late Animation<double> anim;
+
+  String formatarTempo(int s) {
+    final m = (s ~/ 60).toString().padLeft(2, '0');
+    final sec = (s % 60).toString().padLeft(2, '0');
+    return '$m:$sec';
+  }
+
   @override
   void initState() {
     super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+
+    anim = Tween(begin: 0.8, end: 1.0).animate(controller);
+
+    controller.forward();
+
     carregar();
   }
 
@@ -399,6 +431,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
   void dispose() {
     timer?.cancel();
     descansoTimer?.cancel();
+    controller.dispose();
     super.dispose();
   }
 
@@ -417,6 +450,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
 
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() => segundos++);
+      controller.forward(from: 0.8);
     });
   }
 
@@ -475,9 +509,17 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
       ),
       body: Column(
         children: [
-          Text(
-            '${(segundos ~/ 60).toString().padLeft(2, '0')}:${(segundos % 60).toString().padLeft(2, '0')}',
-            style: const TextStyle(color: Colors.white, fontSize: 30),
+          ScaleTransition(
+            scale: anim,
+            child: Text(
+              formatarTempo(segundos),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
           ),
 
           if (descansando)

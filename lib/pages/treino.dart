@@ -15,7 +15,42 @@ class TreinoPage extends StatefulWidget {
 
 class _TreinoPageState extends State<TreinoPage> {
   final TreinoDAO treinoDAO = TreinoDAO();
+  
   List<Map<String, dynamic>> treinos = [];
+  
+List<String> mapearGrupo(String tipo) {
+  switch (tipo) {
+    case 'Push':
+      return ['Peito', 'Ombro', 'Tríceps'];
+    case 'Pull':
+      return ['Costas', 'Bíceps'];
+    case 'Legs':
+      return ['Pernas', 'Glúteos'];
+    case 'Upper':
+      return ['Peito', 'Costas', 'Ombro'];
+    case 'Lower':
+      return ['Pernas', 'Glúteos'];
+    default:
+      return [tipo];
+  }
+}
+
+String traduzirGrupo(String grupo) {
+  switch (grupo) {
+    case 'Push':
+      return 'Peito/Tríceps';
+    case 'Pull':
+      return 'Costas/Bíceps';
+    case 'Legs':
+      return 'Pernas';
+    case 'Upper':
+      return 'Superior';
+    case 'Lower':
+      return 'Inferior';
+    default:
+      return grupo;
+  }
+}
 
   @override
   void initState() {
@@ -107,7 +142,18 @@ class _TreinoPageState extends State<TreinoPage> {
                     return;
                   }
 
-                  final grupos = ['Peito', 'Costas', 'Pernas'];
+                  final freq = frequencias.firstWhere((f) => f['id'] == frequenciaId);
+                  final dias = freq['dias_por_semana'];
+
+                  final divisao = {
+                    3: ['Push', 'Pull', 'Legs'],
+                    4: ['Upper', 'Lower', 'Push', 'Pull'],
+                    5: ['Peito', 'Costas', 'Pernas', 'Ombro', 'Braço'],
+                  };
+
+                  final grupos = divisao[dias] ?? ['Peito', 'Costas', 'Pernas'];
+
+                  final modelos = await listas.exerciciosPorObjetivo(objetivoId!);
 
                   for (var grupo in grupos) {
                     final treinoId = await treinoDAO.criarTreino(
@@ -115,15 +161,24 @@ class _TreinoPageState extends State<TreinoPage> {
                       objetivoId!,
                       professorId!,
                       frequenciaId!,
-                      'Treino: $grupo',
+                      'Treino: ${traduzirGrupo(grupo)}',
                     );
 
-                    final modelos = await listas.exerciciosPorObjetivo(objetivoId!);
+                    final gruposMusculares = mapearGrupo(grupo);
 
-                    final filtrados =
-                        modelos.where((e) => e['grupo_muscular'] == grupo).toList();
+                    final filtrados = modelos.where((e) {
+                      final grupoDB = (e['grupo_muscular'] ?? '').toString().toLowerCase();
 
-                    for (var m in filtrados) {
+                      return gruposMusculares
+                          .map((g) => g.toLowerCase())
+                          .contains(grupoDB);
+                    }).toList();
+                    
+                    if (filtrados.isEmpty) continue;
+
+                    filtrados.shuffle();
+
+                    for (var m in filtrados.take(4)) {
                       await ExercicioDAO().inserirExercicio(
                         treinoId,
                         m['nome'],
@@ -195,7 +250,7 @@ class _TreinoPageState extends State<TreinoPage> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+            child: const Text('Excluir', style: TextStyle(color: Color.fromARGB(146, 32, 30, 30))),
           ),
         ],
       ),
@@ -253,11 +308,44 @@ class _TreinoPageState extends State<TreinoPage> {
                                   : Colors.grey[900],
                               borderRadius: BorderRadius.circular(15),
                             ),
-                            child: Text(
-                              treino['finalizado'] == 1
-                                  ? '${treino['nome']} ✅'
-                                  : treino['nome'],
-                              style: const TextStyle(color: Colors.white),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    treino['finalizado'] == 1
+                                        ? '${treino['nome']}'
+                                        : treino['nome'],
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.white70),
+                                  onPressed: () async {
+                                    final confirmar = await showDialog(
+                                      context: context,
+                                      builder: (_) => AlertDialog(
+                                        title: const Text('Excluir treino?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context, false),
+                                            child: const Text('Cancelar'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context, true),
+                                            child: const Text('Excluir'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirmar == true) {
+                                      await treinoDAO.deletarTreino(treino['id']);
+                                      carregarTreinos();
+                                    }
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -265,9 +353,12 @@ class _TreinoPageState extends State<TreinoPage> {
                     ),
                   ),
 
-            ElevatedButton(
-              onPressed: criarTreinoWizard,
-              child: const Text('Criar treino'),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: criarTreinoWizard,
+                child: const Text('Criar treino'),
+              ),
             )
           ],
         ),
@@ -356,7 +447,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
     context: context,
     builder: (_) => AlertDialog(
       backgroundColor: Colors.grey[900],
-      title: const Text('Treino finalizado 🎉',
+      title: const Text('Treino finalizado',
           style: TextStyle(color: Colors.white)),
       actions: [
         TextButton(
@@ -390,31 +481,22 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
           ),
 
           if (descansando)
-            Text('Descanso: $descanso s',
-                style: const TextStyle(color: Colors.white)),
+            Text(
+              'Descanso: $descanso s',
+              style: const TextStyle(color: Colors.white),
+            ),
 
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: iniciado ? null : iniciarTreino,
-                  child: const Text('Iniciar'),
-                ),
-              ),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: iniciarDescanso,
-                  child: const Text('Descansar'),
-                ),
-              ),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: iniciado ? finalizarTreino : null,
-                  child: const Text('Finalizar'),
-                ),
-              ),
-            ],
+          const SizedBox(height: 10),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: iniciado ? iniciarDescanso : null,
+              child: const Text('Descansar'),
+            ),
           ),
+
+          const SizedBox(height: 10),
 
           Expanded(
             child: ListView.builder(
@@ -428,12 +510,13 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
                     '${ex['nome']} - ${ex['series'] ?? ''}x${ex['reps'] ?? ''}',
                     style: TextStyle(
                       color: Colors.white,
-                      decoration: feito ? TextDecoration.lineThrough : null,
+                      decoration:
+                          feito ? TextDecoration.lineThrough : null,
                     ),
                   ),
                   trailing: Icon(
-                    feito ? Icons.check : Icons.circle_outlined,
-                    color: Colors.purple,
+                    feito ? Icons.check_circle : Icons.radio_button_unchecked,
+                    color: feito ? Colors.green : Colors.purple,
                   ),
                   onTap: () async {
                     await dao.marcarConcluido(ex['id'], feito ? 0 : 1);
@@ -442,7 +525,15 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage> {
                 );
               },
             ),
-          )
+          ),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: iniciado ? finalizarTreino : iniciarTreino,
+              child: Text(iniciado ? 'Finalizar' : 'Iniciar'),
+            ),
+          ),
         ],
       ),
     );

@@ -145,41 +145,89 @@ class DBHelper {
     final modelos = await db.query('exercicios_modelo');
     if (modelos.isEmpty) {
       final exercicios = [
-        {'nome': 'Supino Reto', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 4, 'reps': 10},
-        {'nome': 'Supino Inclinado', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 4, 'reps': 10},
-        {'nome': 'Crossover', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 12},
-        {'nome': 'Flexão', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 15},
 
-        {'nome': 'Puxada Frente', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 4, 'reps': 10},
-        {'nome': 'Remada Curvada', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 4, 'reps': 10},
-        {'nome': 'Remada Máquina', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 12},
-        {'nome': 'Pulldown', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 12},
+  // HIPERTROFIA
 
-        {'nome': 'Agachamento', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 4, 'reps': 10},
-        {'nome': 'Leg Press', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 4, 'reps': 12},
-        {'nome': 'Cadeira Extensora', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 12},
-        {'nome': 'Cadeira Flexora', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 12},
+  {'nome': 'Supino Reto', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 4, 'reps': 10},
+  {'nome': 'Supino Inclinado', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 4, 'reps': 10},
+  {'nome': 'Crossover', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 12},
+  {'nome': 'Flexão', 'objetivo_id': 3, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 15},
 
-        {'nome': 'Elevação Pélvica', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 4, 'reps': 12},
-        {'nome': 'Abdução', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 15},
-        {'nome': 'Coice', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 15},
-        {'nome': 'Glúteo Máquina', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 12},
+  {'nome': 'Puxada Frente', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 4, 'reps': 10},
+  {'nome': 'Remada Curvada', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 4, 'reps': 10},
+  {'nome': 'Remada Máquina', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 12},
+  {'nome': 'Pulldown', 'objetivo_id': 3, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 12},
 
-        {'nome': 'Desenvolvimento', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 4, 'reps': 10},
-        {'nome': 'Elevação Lateral', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 3, 'reps': 12},
-        {'nome': 'Elevação Frontal', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 3, 'reps': 12},
-        {'nome': 'Arnold Press', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 3, 'reps': 10},
+  {'nome': 'Agachamento', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 4, 'reps': 10},
+  {'nome': 'Leg Press', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 4, 'reps': 12},
+  {'nome': 'Cadeira Extensora', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 12},
+  {'nome': 'Cadeira Flexora', 'objetivo_id': 3, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 12},
 
-        {'nome': 'Rosca Direta', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 12},
-        {'nome': 'Rosca Alternada', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 12},
-        {'nome': 'Rosca Scott', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 10},
-        {'nome': 'Rosca Concentrada', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 10},
+  {'nome': 'Elevação Pélvica', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 4, 'reps': 12},
+  {'nome': 'Abdução', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 15},
+  {'nome': 'Coice', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 15},
+  {'nome': 'Glúteo Máquina', 'objetivo_id': 3, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 12},
 
-        {'nome': 'Tríceps Corda', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 12},
-        {'nome': 'Tríceps Testa', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 10},
-        {'nome': 'Tríceps Banco', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 12},
-        {'nome': 'Tríceps Francês', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 10},
-      ];
+  {'nome': 'Desenvolvimento', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 4, 'reps': 10},
+  {'nome': 'Elevação Lateral', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 3, 'reps': 12},
+  {'nome': 'Elevação Frontal', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 3, 'reps': 12},
+  {'nome': 'Arnold Press', 'objetivo_id': 3, 'grupo_muscular': 'Ombro', 'series': 3, 'reps': 10},
+
+  {'nome': 'Rosca Direta', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 12},
+  {'nome': 'Rosca Alternada', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 12},
+  {'nome': 'Rosca Scott', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 10},
+  {'nome': 'Rosca Concentrada', 'objetivo_id': 3, 'grupo_muscular': 'Bíceps', 'series': 3, 'reps': 10},
+
+  {'nome': 'Tríceps Corda', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 12},
+  {'nome': 'Tríceps Testa', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 10},
+  {'nome': 'Tríceps Banco', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 12},
+  {'nome': 'Tríceps Francês', 'objetivo_id': 3, 'grupo_muscular': 'Tríceps', 'series': 3, 'reps': 10},
+
+  // FORTALECIMENTO
+  
+  {'nome': 'Supino Máquina', 'objetivo_id': 2, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 12},
+  {'nome': 'Flexão Inclinada', 'objetivo_id': 2, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 15},
+  {'nome': 'Peck Deck', 'objetivo_id': 2, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 12},
+  {'nome': 'Crossover Leve', 'objetivo_id': 2, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 12},
+
+  {'nome': 'Remada Baixa', 'objetivo_id': 2, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 12},
+  {'nome': 'Puxada Neutra', 'objetivo_id': 2, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 12},
+  {'nome': 'Pulldown Leve', 'objetivo_id': 2, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 12},
+  {'nome': 'Remada Unilateral', 'objetivo_id': 2, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 12},
+
+  {'nome': 'Agachamento Livre', 'objetivo_id': 2, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 12},
+  {'nome': 'Leg Press Leve', 'objetivo_id': 2, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 15},
+  {'nome': 'Step Up', 'objetivo_id': 2, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 12},
+  {'nome': 'Avanço', 'objetivo_id': 2, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 12},
+
+  {'nome': 'Elevação Pélvica Leve', 'objetivo_id': 2, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 15},
+  {'nome': 'Abdução Leve', 'objetivo_id': 2, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 15},
+  {'nome': 'Coice Leve', 'objetivo_id': 2, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 15},
+  {'nome': 'Glúteo Cabo', 'objetivo_id': 2, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 12},
+
+  // EMAGRECIMENTO
+
+  {'nome': 'Flexão Rápida', 'objetivo_id': 1, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 20},
+  {'nome': 'Burpee', 'objetivo_id': 1, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 20},
+  {'nome': 'Supino Leve', 'objetivo_id': 1, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 15},
+  {'nome': 'Crossover Rápido', 'objetivo_id': 1, 'grupo_muscular': 'Peito', 'series': 3, 'reps': 20},
+
+  {'nome': 'Remada Elástico', 'objetivo_id': 1, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 20},
+  {'nome': 'Pulldown Rápido', 'objetivo_id': 1, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 20},
+  {'nome': 'Remada Leve', 'objetivo_id': 1, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 20},
+  {'nome': 'Puxada Rápida', 'objetivo_id': 1, 'grupo_muscular': 'Costas', 'series': 3, 'reps': 20},
+
+  {'nome': 'Agachamento Jump', 'objetivo_id': 1, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 20},
+  {'nome': 'Afundo Alternado', 'objetivo_id': 1, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 20},
+  {'nome': 'Leg Press Rápido', 'objetivo_id': 1, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 20},
+  {'nome': 'Agachamento Livre', 'objetivo_id': 1, 'grupo_muscular': 'Pernas', 'series': 3, 'reps': 20},
+
+  {'nome': 'Glúteo Ponte', 'objetivo_id': 1, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 20},
+  {'nome': 'Abdução Rápida', 'objetivo_id': 1, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 20},
+  {'nome': 'Coice Rápido', 'objetivo_id': 1, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 20},
+  {'nome': 'Elevação Pélvica', 'objetivo_id': 1, 'grupo_muscular': 'Glúteos', 'series': 3, 'reps': 20},
+
+];
 
       for (var ex in exercicios) {
         await db.insert('exercicios_modelo', ex);

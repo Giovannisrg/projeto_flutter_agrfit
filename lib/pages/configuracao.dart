@@ -53,7 +53,7 @@ class _ConfigPageState extends State<ConfigPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildButton('Aparência'),
+                _buildButton('Aparência', onPressed: () => _showEmBreve(context)),
                 _buildButton(
                   'Privacidade',
                   onPressed: () => _showPrivacidade(context),
@@ -62,7 +62,7 @@ class _ConfigPageState extends State<ConfigPage> {
                   'Notificações: ${notificacoesAtivas ? "Ligadas" : "Desligadas"}',
                   onPressed: _toggleNotificacoes,
                 ),
-                _buildButton('Preferências de treino'),
+                _buildButton('Preferências de treino', onPressed: () => _showEmBreve(context)),
                 _buildButton('Ajuda', onPressed: () => _showAjuda(context)),
                 _buildButton('Sair', onPressed: () => _confirmLogout(context)),
               ],
@@ -88,6 +88,24 @@ class _ConfigPageState extends State<ConfigPage> {
         ),
         onPressed: onPressed ?? () {},
         child: Text(text),
+      ),
+    );
+  }
+
+  void _showEmBreve(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('🚧 Em breve'),
+        content: const Text(
+          'Essa funcionalidade está em desenvolvimento e estará disponível em breve.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }

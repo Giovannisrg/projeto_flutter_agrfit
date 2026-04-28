@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ChatbotPage extends StatefulWidget {
-  const ChatbotPage({super.key});
+  final String? perguntaInicial;
+
+  const ChatbotPage({super.key, this.perguntaInicial});
 
   @override
   State<ChatbotPage> createState() => _ChatbotPageState();
@@ -32,9 +34,20 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+
+    if (widget.perguntaInicial != null) {
+      mensagens.add({
+        "texto": widget.perguntaInicial!,
+        "isUser": true,
+      });
+
+      mensagens.add({
+        "texto": "Vou te mostrar como fazer corretamente 👇",
+        "isUser": false,
+      });
+    }
   }
 
   @override

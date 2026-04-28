@@ -26,12 +26,19 @@ class TreinoDAO {
   Future<List<Map<String, dynamic>>> listarTreinos(int usuarioId) async {
     final db = await DBHelper.instance.database;
 
-    return await db.query(
-      'treinos',
-      where: 'usuario_id = ?',
-      whereArgs: [usuarioId],
-      orderBy: 'id DESC',
-    );
+    final result = await db.rawQuery('''
+      SELECT 
+        t.*,
+        p.nome AS professor_nome,
+        o.nome AS objetivo_nome
+      FROM treinos t
+      LEFT JOIN professores p ON p.id = t.professor_id
+      LEFT JOIN objetivos o ON o.id = t.objetivo_id
+      WHERE t.usuario_id = ?
+      ORDER BY t.id ASC
+    ''', [usuarioId]);
+
+    return result;
   }
 
   Future<int> atualizarTreino(int id, String nome) async {

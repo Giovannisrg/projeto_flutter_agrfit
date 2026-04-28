@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projeto_flutter_agrfit/database/treino_dao.dart';
 import 'package:projeto_flutter_agrfit/database/exercicio_dao.dart';
 import 'package:projeto_flutter_agrfit/database/listas_dao.dart';
+import 'package:projeto_flutter_agrfit/pages/chatbot.dart';
 import 'dart:async';
 
 class TreinoPage extends StatefulWidget {
@@ -157,15 +158,20 @@ String traduzirGrupo(String grupo) {
 
                   final grupos = gerarDivisao(dias);
 
+                  final letras = ['A', 'B', 'C', 'D', 'E'];
+
                   final modelos = await listas.exerciciosPorObjetivo(objetivoId!);
 
-                  for (var grupo in grupos) {
+                  for (int i = 0; i < grupos.length; i++) {
+                    final grupo = grupos[i];
+                    final letra = letras[i];
+
                     final treinoId = await treinoDAO.criarTreino(
                       widget.user['id'],
                       objetivoId!,
                       professorId!,
                       frequenciaId!,
-                      'Treino: ${traduzirGrupo(grupo)}',
+                      'Treino $letra: ${traduzirGrupo(grupo)}',
                     );
 
                     final gruposMusculares = mapearGrupo(grupo);
@@ -324,15 +330,40 @@ String traduzirGrupo(String grupo) {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
-                                  child: Text(
-                                    treino['finalizado'] == 1
-                                        ? '${treino['nome']}'
-                                        : treino['nome'],
-                                    style: const TextStyle(color: Colors.white),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        treino['nome'],
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 4),
+
+                                      Text(
+                                        'Professor: ${treino['professor_nome'] ?? '---'}',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+
+                                      Text(
+                                        'Objetivo: ${treino['objetivo_nome'] ?? '---'}',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+
                                 IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.white70),
+                                  icon: const Icon(Icons.delete, color: Colors.purple),
                                   onPressed: () async {
                                     final confirmar = await showDialog(
                                       context: context,
@@ -368,10 +399,26 @@ String traduzirGrupo(String grupo) {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.purple,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  minimumSize: const Size(0, 40),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
                 onPressed: criarTreinoWizard,
-                child: const Text('Criar treino'),
+                child: const Text(
+                  'Criar treino',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -389,7 +436,7 @@ class ExecucaoTreinoPage extends StatefulWidget {
 }
 
 class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
-    with SingleTickerProviderStateMixin {
+  with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final ExercicioDAO dao = ExercicioDAO();
 
   List<Map<String, dynamic>> exercicios = [];
@@ -411,9 +458,24 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
     return '$m:$sec';
   }
 
+  ButtonStyle botaoBrancoRoxo() {
+  return ElevatedButton.styleFrom(
+    backgroundColor: Colors.white,
+    foregroundColor: Colors.purple,
+    elevation: 0,
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    minimumSize: const Size(0, 45),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(25),
+    ),
+  );
+  }
+
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
 
     controller = AnimationController(
       vsync: this,
@@ -429,11 +491,26 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+
     timer?.cancel();
+    timer = null;
+
     descansoTimer?.cancel();
+    descansoTimer = null;
+
     controller.dispose();
     super.dispose();
   }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) {
+      timer?.cancel();
+      descansoTimer?.cancel();
+    }
+  }
+
 
   Future<void> carregar() async {
     final data = await dao.listarExercicios(widget.treino['id']);
@@ -446,21 +523,28 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
   }
 
   void iniciarTreino() {
+    if (timer != null && timer!.isActive) return;
+
     setState(() => iniciado = true);
 
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
       setState(() => segundos++);
       controller.forward(from: 0.8);
     });
   }
 
   void iniciarDescanso() {
+    descansoTimer?.cancel();
+
     setState(() {
       descansando = true;
       descanso = 60;
     });
 
     descansoTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+
       if (descanso == 0) {
         t.cancel();
         setState(() => descansando = false);
@@ -472,6 +556,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
 
   void finalizarTreino() async {
   timer?.cancel();
+  descansoTimer?.cancel();
 
   await TreinoDAO().marcarFinalizado(widget.treino['id']);
 
@@ -533,6 +618,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
+              style: botaoBrancoRoxo(),
               onPressed: iniciado ? iniciarDescanso : null,
               child: const Text('Descansar'),
             ),
@@ -556,9 +642,28 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
                           feito ? TextDecoration.lineThrough : null,
                     ),
                   ),
-                  trailing: Icon(
-                    feito ? Icons.check_circle : Icons.radio_button_unchecked,
-                    color: feito ? Colors.green : Colors.purple,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.play_circle_outline, color: Colors.purple),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatbotPage(
+                                perguntaInicial:
+                                    'Adrianna, como eu executo ${ex['nome']}?',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      Icon(
+                        feito ? Icons.check_circle : Icons.radio_button_unchecked,
+                        color: feito ? Colors.green : Colors.purple,
+                      ),
+                    ],
                   ),
                   onTap: () async {
                     await dao.marcarConcluido(ex['id'], feito ? 0 : 1);
@@ -569,11 +674,15 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
             ),
           ),
 
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: iniciado ? finalizarTreino : iniciarTreino,
-              child: Text(iniciado ? 'Finalizar' : 'Iniciar'),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20), // 🔥 sobe o botão
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: botaoBrancoRoxo(),
+                onPressed: iniciado ? finalizarTreino : iniciarTreino,
+                child: Text(iniciado ? 'Finalizar' : 'Iniciar'),
+              ),
             ),
           ),
         ],

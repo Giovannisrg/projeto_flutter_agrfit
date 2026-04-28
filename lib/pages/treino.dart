@@ -140,6 +140,8 @@ String traduzirGrupo(String grupo) {
               TextButton(
                 onPressed: () async {
                   if (objetivoId == null || professorId == null || frequenciaId == null) {
+                    if (!context.mounted) return;
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Preencha todos os campos')),
                     );
@@ -315,8 +317,11 @@ String traduzirGrupo(String grupo) {
                               ),
                             );
 
+                            if (!mounted) return;
+
                             if (result == true) carregarTreinos();
                           },
+                          
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(15),
@@ -445,8 +450,11 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
   Timer? timer;
   bool iniciado = false;
 
+  DateTime? inicioTreino;
+
   int descanso = 0;
   Timer? descansoTimer;
+  DateTime? inicioDescanso;
   bool descansando = false;
 
   late AnimationController controller;
@@ -505,9 +513,14 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state != AppLifecycleState.resumed) {
-      timer?.cancel();
-      descansoTimer?.cancel();
+    if (state == AppLifecycleState.resumed) {
+      if (inicioTreino != null) {
+        final diff = DateTime.now().difference(inicioTreino!);
+
+        setState(() {
+          segundos = diff.inSeconds;
+        });
+      }
     }
   }
 
@@ -525,63 +538,85 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
   void iniciarTreino() {
     if (timer != null && timer!.isActive) return;
 
+    inicioTreino ??= DateTime.now();
+
     setState(() => iniciado = true);
 
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      setState(() => segundos++);
+      if (!mounted || inicioTreino == null) return;
+
+      final diff = DateTime.now().difference(inicioTreino!);
+      setState(() => segundos = diff.inSeconds);
+
       controller.forward(from: 0.8);
     });
   }
 
   void iniciarDescanso() {
-    descansoTimer?.cancel();
+    inicioDescanso = DateTime.now();
 
     setState(() {
       descansando = true;
       descanso = 60;
     });
 
-    descansoTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) return;
+    descansoTimer?.cancel();
 
-      if (descanso == 0) {
+    descansoTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted || inicioDescanso == null) return;
+
+      final diff = DateTime.now().difference(inicioDescanso!).inSeconds;
+      final restante = 60 - diff;
+
+      if (restante <= 0) {
         t.cancel();
-        setState(() => descansando = false);
+        setState(() {
+          descansando = false;
+          descanso = 0;
+        });
       } else {
-        setState(() => descanso--);
+        setState(() => descanso = restante);
       }
     });
   }
 
   void finalizarTreino() async {
-  timer?.cancel();
-  descansoTimer?.cancel();
+    timer?.cancel();
+    descansoTimer?.cancel();
 
-  await TreinoDAO().marcarFinalizado(widget.treino['id']);
+    setState(() {
+      iniciado = false;
+      descansando = false;
+      inicioTreino = null;
+      segundos = 0;
+    });
 
-  if (!mounted) return;
+    await TreinoDAO().marcarFinalizado(widget.treino['id']);
 
-  await showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      backgroundColor: Colors.grey[900],
-      title: const Text('Treino finalizado',
-          style: TextStyle(color: Colors.white)),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context); // fecha popup
-          },
-          child: const Text('OK'),
+    if (!mounted) return;
+
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text(
+          'Treino finalizado',
+          style: TextStyle(color: Colors.white),
         ),
-      ],
-    ),
-  );
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
 
-  if (!mounted) return;
+    if (!mounted) return;
 
-  Navigator.pop(context, true); // volta pra lista
+    Navigator.pop(context, true);
   }
 
   @override
@@ -667,15 +702,18 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
                   ),
                   onTap: () async {
                     await dao.marcarConcluido(ex['id'], feito ? 0 : 1);
+
+                    if (!mounted) return;
+
                     carregar();
-                  },
+                  }
                 );
               },
             ),
           ),
 
           Padding(
-            padding: const EdgeInsets.only(bottom: 20), // 🔥 sobe o botão
+            padding: const EdgeInsets.only(bottom: 20),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(

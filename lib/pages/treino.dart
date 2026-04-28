@@ -15,42 +15,42 @@ class TreinoPage extends StatefulWidget {
 
 class _TreinoPageState extends State<TreinoPage> {
   final TreinoDAO treinoDAO = TreinoDAO();
-  
-  List<Map<String, dynamic>> treinos = [];
-  
-List<String> mapearGrupo(String tipo) {
-  switch (tipo) {
-    case 'Push':
-      return ['Peito', 'Ombro', 'Tríceps'];
-    case 'Pull':
-      return ['Costas', 'Bíceps'];
-    case 'Legs':
-      return ['Pernas', 'Glúteos'];
-    case 'Upper':
-      return ['Peito', 'Costas', 'Ombro'];
-    case 'Lower':
-      return ['Pernas', 'Glúteos'];
-    default:
-      return [tipo];
-  }
-}
 
-String traduzirGrupo(String grupo) {
-  switch (grupo) {
-    case 'Push':
-      return 'Peito/Tríceps';
-    case 'Pull':
-      return 'Costas/Bíceps';
-    case 'Legs':
-      return 'Pernas';
-    case 'Upper':
-      return 'Superior';
-    case 'Lower':
-      return 'Inferior';
-    default:
-      return grupo;
+  List<Map<String, dynamic>> treinos = [];
+
+  List<String> mapearGrupo(String tipo) {
+    switch (tipo) {
+      case 'Push':
+        return ['Peito', 'Ombro', 'Tríceps'];
+      case 'Pull':
+        return ['Costas', 'Bíceps'];
+      case 'Legs':
+        return ['Pernas', 'Glúteos'];
+      case 'Upper':
+        return ['Peito', 'Costas', 'Ombro'];
+      case 'Lower':
+        return ['Pernas', 'Glúteos'];
+      default:
+        return [tipo];
+    }
   }
-}
+
+  String traduzirGrupo(String grupo) {
+    switch (grupo) {
+      case 'Push':
+        return 'Peito/Tríceps';
+      case 'Pull':
+        return 'Costas/Bíceps';
+      case 'Legs':
+        return 'Pernas';
+      case 'Upper':
+        return 'Superior';
+      case 'Lower':
+        return 'Inferior';
+      default:
+        return grupo;
+    }
+  }
 
   @override
   void initState() {
@@ -172,12 +172,9 @@ String traduzirGrupo(String grupo) {
 
                     final filtrados = modelos.where((e) {
                       final grupoDB = (e['grupo_muscular'] ?? '').toString().toLowerCase();
-
-                      return gruposMusculares
-                          .map((g) => g.toLowerCase())
-                          .contains(grupoDB);
+                      return gruposMusculares.map((g) => g.toLowerCase()).contains(grupoDB);
                     }).toList();
-                    
+
                     if (filtrados.isEmpty) continue;
 
                     filtrados.shuffle();
@@ -199,13 +196,13 @@ String traduzirGrupo(String grupo) {
                         m['reps'],
                       );
                     }
-                    }
+                  }
 
-                    if (!mounted) return;
+                  if (!mounted) return;
 
-                    Navigator.pop(context);
-                    carregarTreinos();
-                                    },
+                  Navigator.pop(context);
+                  carregarTreinos();
+                },
                 child: const Text('Criar'),
               ),
             ],
@@ -291,7 +288,6 @@ String traduzirGrupo(String grupo) {
           children: [
             const Text('Seus treinos 💪', style: TextStyle(color: Colors.white, fontSize: 20)),
             const SizedBox(height: 20),
-
             treinos.isEmpty
                 ? const Text('Nenhum treino', style: TextStyle(color: Colors.white54))
                 : Expanded(
@@ -315,9 +311,7 @@ String traduzirGrupo(String grupo) {
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(15),
                             decoration: BoxDecoration(
-                              color: treino['finalizado'] == 1
-                                  ? Colors.green
-                                  : Colors.grey[900],
+                              color: treino['finalizado'] == 1 ? Colors.green : Colors.grey[900],
                               borderRadius: BorderRadius.circular(15),
                             ),
                             child: Row(
@@ -325,9 +319,7 @@ String traduzirGrupo(String grupo) {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    treino['finalizado'] == 1
-                                        ? '${treino['nome']}'
-                                        : treino['nome'],
+                                    treino['nome'],
                                     style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
@@ -364,7 +356,6 @@ String traduzirGrupo(String grupo) {
                       },
                     ),
                   ),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -449,6 +440,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
     setState(() => iniciado = true);
 
     timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
       setState(() => segundos++);
       controller.forward(from: 0.8);
     });
@@ -461,6 +453,11 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
     });
 
     descansoTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+
       if (descanso == 0) {
         t.cancel();
         setState(() => descansando = false);
@@ -471,32 +468,31 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
   }
 
   void finalizarTreino() async {
-  timer?.cancel();
+    timer?.cancel();
 
-  await TreinoDAO().marcarFinalizado(widget.treino['id']);
+    await TreinoDAO().marcarFinalizado(widget.treino['id']);
 
-  if (!mounted) return;
+    if (!mounted) return;
 
-  await showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      backgroundColor: Colors.grey[900],
-      title: const Text('Treino finalizado',
-          style: TextStyle(color: Colors.white)),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context); // fecha popup
-          },
-          child: const Text('OK'),
-        ),
-      ],
-    ),
-  );
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text('Treino finalizado', style: TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
 
-  if (!mounted) return;
+    if (!mounted) return;
 
-  Navigator.pop(context, true); // volta pra lista
+    Navigator.pop(context, true);
   }
 
   @override
@@ -521,15 +517,12 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
               ),
             ),
           ),
-
           if (descansando)
             Text(
               'Descanso: $descanso s',
               style: const TextStyle(color: Colors.white),
             ),
-
           const SizedBox(height: 10),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -537,9 +530,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
               child: const Text('Descansar'),
             ),
           ),
-
           const SizedBox(height: 10),
-
           Expanded(
             child: ListView.builder(
               itemCount: exercicios.length,
@@ -552,8 +543,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
                     '${ex['nome']} - ${ex['series'] ?? ''}x${ex['reps'] ?? ''}',
                     style: TextStyle(
                       color: Colors.white,
-                      decoration:
-                          feito ? TextDecoration.lineThrough : null,
+                      decoration: feito ? TextDecoration.lineThrough : null,
                     ),
                   ),
                   trailing: Icon(
@@ -568,7 +558,6 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
               },
             ),
           ),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(

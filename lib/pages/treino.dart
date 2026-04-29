@@ -83,6 +83,7 @@ String traduzirGrupo(String grupo) {
     int? objetivoId;
     int? frequenciaId;
 
+    if (!mounted) return;
     await showDialog(
       context: context,
       builder: (_) => StatefulBuilder(

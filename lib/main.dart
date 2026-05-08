@@ -115,8 +115,8 @@ class _LoginPageState extends State<LoginPage> {
 
       if (!mounted) return;
 
-      if (response != null && response['token'] != null) {
-        final token = response['token'];
+      if (response != null) {
+        final token = response.accessToken;
 
         Map<String, dynamic>? user = await UserDAO().buscarPorEmail(
           _nomeUsuario,

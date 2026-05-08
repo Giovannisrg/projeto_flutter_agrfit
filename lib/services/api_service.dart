@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../dto/auth_response_dto.dart';
 
 class ApiService {
   static const String baseUrl = 'https://mobile-ios-login.zani0x03.eti.br/api';
 
-  static const String sistemaId = 'd7f0beee-ac36-4cdf-8dba-7c752ace6ec6';
+  static const String sistemaId = '3a8802e2-c460-49f7-a5d2-3cf556e8024a';
 
-  static Future<Map<String, dynamic>?> login(
+  static Future<AuthResponseDto?> login(
     String username,
     String password,
   ) async {
@@ -21,7 +22,9 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+
+      return AuthResponseDto.fromJson(data);
     }
 
     return null;

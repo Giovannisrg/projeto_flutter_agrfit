@@ -1,0 +1,59 @@
+[33m4a4719a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m colocando API do professor
+[33m90f1f85[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #19 from Giovannisrg/rafa
+[33m157149f[m Corrigindo timer de descanso
+[33mc6a7dfa[m Merge pull request #18 from Giovannisrg/rafa
+[33mcf65ffd[m Arrumando o bug dos treinos
+[33m22fd1f8[m Trocando a ordem dos treinos
+[33mfcef6db[m Trocando a cor dos botões e chat
+[33mc420dd2[m Arrumando pag de config
+[33m739428f[m Merge pull request #17 from Giovannisrg/rafa
+[33m2c105e4[m Corrigindo o botão de logout
+[33mf1a34e1[m Update README.md
+[33ma911c8b[m Merge pull request #16 from Giovannisrg/rafa
+[33m5651701[m Alterando o cronômetro
+[33md841640[m Merge pull request #15 from Giovannisrg/rafa
+[33mcdd86fc[m melhhorando os exercícios
+[33m5dc1a7f[m Merge pull request #14 from Giovannisrg/rafa
+[33mf127b5c[m ajustendo os exercícios dos treino
+[33maaa3bd6[m Merge pull request #13 from Giovannisrg/rafa
+[33m44b63d1[m feat: ajustes no treino
+[33m89dd41d[m Merge pull request #12 from Giovannisrg/rafa
+[33m9595789[m alterações na tela de treino e nome do app
+[33m2cf6751[m API e Token Simulados agora vai
+[33m9177a8e[m Merge pull request #11 from Giovannisrg/revert-10-revert-9-ana
+[33mddcf503[m[33m ([m[1;31morigin/revert-10-revert-9-ana[m[33m)[m Revert "Revert "API e Token simulados de exemplo""
+[33m004926d[m[33m ([m[1;31morigin/ana[m[33m, [m[1;32mana[m[33m)[m Merge pull request #10 from Giovannisrg/revert-9-ana
+[33md370964[m Revert "API e Token simulados de exemplo"
+[33mbd95bf2[m Merge pull request #9 from Giovannisrg/ana
+[33m34cdace[m Merge branch 'main' into ana
+[33m393cfdf[m API e Token simulados de exemplo
+[33mb12f802[m Merge pull request #8 from Giovannisrg/rafa
+[33ma830b48[m Merge branch 'main' into rafa
+[33m94e2cd1[m juntando telas
+[33mfb7f429[m feat: treino com execução e exercícios
+[33ma1fb2da[m melhorando página de configurações
+[33m6b67e76[m Merge pull request #7 from Giovannisrg/ana
+[33ma72275e[m sql do perfil
+[33m7025f59[m sql testado (cadastro)
+[33m72f8663[m teste de sql no login
+[33ma870ded[m página de configurações e finalizando navbar
+[33mf62c7a0[m Merge pull request #6 from Giovannisrg/rafa
+[33m41f6bbf[m tela de treino e chatbot
+[33m67e5457[m Merge pull request #5 from Giovannisrg/ana
+[33mec43500[m perfil
+[33m7a237b7[m Merge pull request #4 from Giovannisrg/ana
+[33m05d0cea[m deixando bonito login
+[33md2cd7fe[m ajustando login
+[33mfd76253[m perfil e navbar
+[33m9819b79[m pagina de perfil
+[33m39af712[m Merge pull request #3 from Giovannisrg/ana
+[33me292ae0[m arquivos
+[33m67de7d3[m paginas
+[33m4f11a89[m Delete .vscode directory
+[33ma71457a[m criando pastas
+[33m8d31a93[m Finalizando protótipo Tela Login
+[33m573bb72[m Merge pull request #2 from Giovannisrg/master
+[33me591942[m salvando
+[33m42a22ed[m Merge pull request #1 from Giovannisrg/master
+[33m39da6db[m commit 2, iniciando projeto flutter
+[33md4c6f59[m Criando repositório e README

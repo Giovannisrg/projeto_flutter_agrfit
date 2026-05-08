@@ -58,4 +58,20 @@ class UserDAO {
       whereArgs: [id],
     );
   }
+
+  Future<Map<String, dynamic>?> buscarPorEmail(String email) async {
+    final db = await DBHelper.instance.database;
+
+    final result = await db.query(
+      'usuarios',
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first;
+    }
+
+    return null;
+  }
 }

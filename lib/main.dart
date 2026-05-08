@@ -5,6 +5,7 @@ import 'pages/register_page.dart';
 import 'database/user_dao.dart';
 import 'database/db_helper.dart';
 import 'services/auth_service.dart';
+import 'services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +25,6 @@ class MainApp extends StatelessWidget {
       home: FutureBuilder<Map<String, dynamic>?>(
         future: AuthService.getUser(),
         builder: (context, snapshot) {
-          // 🔄 carregando
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               body: Center(child: CircularProgressIndicator()),
@@ -53,12 +53,14 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usuarioController = TextEditingController();
+
   final TextEditingController _senhaController = TextEditingController();
 
   String _nomeUsuario = "";
   String _senhaUsuario = "";
 
   final PageController _controller = PageController();
+
   int _currentPage = 0;
 
   Timer? _timer;
@@ -90,10 +92,66 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     _timer?.cancel();
+
     _controller.dispose();
+
     _usuarioController.dispose();
+
     _senhaController.dispose();
+
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (_nomeUsuario.isEmpty || _senhaUsuario.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Preencha todos os campos')));
+      return;
+    }
+
+    try {
+      final response = await ApiService.login(_nomeUsuario, _senhaUsuario);
+
+      if (!mounted) return;
+
+      if (response != null && response['token'] != null) {
+        final token = response['token'];
+
+        Map<String, dynamic>? user = await UserDAO().buscarPorEmail(
+          _nomeUsuario,
+        );
+
+        if (user == null) {
+          await UserDAO().criarUsuario(
+            _nomeUsuario.split('@')[0],
+            _nomeUsuario,
+            _senhaUsuario,
+          );
+
+          user = await UserDAO().buscarPorEmail(_nomeUsuario);
+        }
+
+        await AuthService.saveToken(token);
+
+        await AuthService.saveUser(user!);
+
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => NavBarPage(user: user!)),
+        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Login inválido')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro: $e')));
+    }
   }
 
   @override
@@ -108,10 +166,12 @@ class _LoginPageState extends State<LoginPage> {
               controller: _controller,
               itemBuilder: (context, index) {
                 final banner = banners[index % banners.length];
+
                 return _buildBanner(banner);
               },
             ),
           ),
+
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -135,13 +195,16 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 20),
 
                     const Text(
                       'Email',
                       style: TextStyle(color: Colors.white70),
                     ),
+
                     const SizedBox(height: 5),
+
                     TextField(
                       controller: _usuarioController,
                       style: const TextStyle(color: Colors.white),
@@ -168,7 +231,9 @@ class _LoginPageState extends State<LoginPage> {
                       'Senha',
                       style: TextStyle(color: Colors.white70),
                     ),
+
                     const SizedBox(height: 5),
+
                     TextField(
                       controller: _senhaController,
                       obscureText: true,
@@ -203,37 +268,7 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        onPressed: () async {
-                          if (_nomeUsuario.isEmpty || _senhaUsuario.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Preencha todos os campos'),
-                              ),
-                            );
-                            return;
-                          }
-
-                          final user = await UserDAO().login(
-                            _nomeUsuario,
-                            _senhaUsuario,
-                          );
-
-                          if (!mounted) return;
-
-                          if (user != null) {
-                            String token = "token_${user['id']}";
-
-                            await AuthService.saveToken(token);
-                            await AuthService.saveUser(user);
-
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => NavBarPage(user: user),
-                              ),
-                            );
-                          }
-                        },
+                        onPressed: _login,
                         child: const Text('Login'),
                       ),
                     ),
@@ -252,10 +287,7 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         child: const Text(
                           'Criar conta',
-                          style: TextStyle(
-                            color: Colors.purple,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.purple, fontSize: 14),
                         ),
                       ),
                     ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/chat_service.dart';
+import '../services/auth_service.dart';
 
 class ChatbotPage extends StatefulWidget {
   final String? perguntaInicial;
@@ -12,57 +14,75 @@ class ChatbotPage extends StatefulWidget {
 class _ChatbotPageState extends State<ChatbotPage> {
   final TextEditingController _controller = TextEditingController();
 
+  bool carregando = false;
+
   List<Map<String, dynamic>> mensagens = [
     {
       "texto":
           "Oie! Eu sou a Adrianna 💜\nSua assistente de treinos.\nComo posso te ajudar hoje?",
-      "isUser": false
-    }
+      "isUser": false,
+    },
   ];
-
-  void enviarMensagem() {
-    if (_controller.text.trim().isEmpty) return;
-
-    setState(() {
-      mensagens.add({
-        "texto": _controller.text,
-        "isUser": true,
-      });
-    });
-
-    _controller.clear();
-  }
 
   @override
   void initState() {
     super.initState();
 
     if (widget.perguntaInicial != null) {
-      mensagens.add({
-        "texto": widget.perguntaInicial!,
-        "isUser": true,
-      });
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        _controller.text = widget.perguntaInicial!;
 
-      mensagens.add({
-        "texto": "Vou te mostrar como fazer corretamente 👇",
-        "isUser": false,
+        await enviarMensagem();
       });
     }
+  }
+
+  Future<void> enviarMensagem() async {
+    if (_controller.text.trim().isEmpty) return;
+
+    final pergunta = _controller.text;
+
+    setState(() {
+      mensagens.add({"texto": pergunta, "isUser": true});
+
+      carregando = true;
+    });
+
+    _controller.clear();
+
+    final token = await AuthService.getToken();
+
+    if (token == null) {
+      setState(() {
+        mensagens.add({"texto": "Usuário não autenticado.", "isUser": false});
+
+        carregando = false;
+      });
+
+      return;
+    }
+
+    final resposta = await ChatService.enviarMensagem(pergunta, token);
+
+    setState(() {
+      mensagens.add({"texto": resposta, "isUser": false});
+
+      carregando = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+
       appBar: AppBar(
-        title: const Text(
-          'Adrianna',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Adrianna', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         centerTitle: true,
         elevation: 0,
       ),
+
       body: Column(
         children: [
           Expanded(
@@ -71,10 +91,17 @@ class _ChatbotPageState extends State<ChatbotPage> {
               itemCount: mensagens.length,
               itemBuilder: (context, index) {
                 final msg = mensagens[index];
+
                 return _buildMensagem(msg["texto"], msg["isUser"]);
               },
             ),
           ),
+
+          if (carregando)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: CircularProgressIndicator(color: Colors.purple),
+            ),
 
           _buildInput(),
         ],
@@ -84,8 +111,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   Widget _buildMensagem(String texto, bool isUser) {
     return Align(
-      alignment:
-          isUser ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 5),
         padding: const EdgeInsets.all(12),
@@ -96,11 +122,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
         ),
         child: Text(
           texto,
-          style: TextStyle(
-            color: isUser
-                ? Colors.purple // texto do usuário
-                : Colors.white, // texto do chatbot
-          ),
+          style: TextStyle(color: isUser ? Colors.purple : Colors.white),
         ),
       ),
     );
@@ -127,6 +149,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
               ),
             ),
           ),
+
           GestureDetector(
             onTap: enviarMensagem,
             child: const Icon(Icons.send, color: Colors.purple),

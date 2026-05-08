@@ -1,77 +1,46 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class Album {
-  final int userId;
-  final int id;
-  final String title;
-
-  Album({required this.userId, required this.id, required this.title});
-
-  factory Album.fromJson(Map<String, dynamic> json) {
-    return Album(userId: json['userId'], id: json['id'], title: json['title']);
-  }
-}
-
 class ApiService {
-  final String baseUrl = 'https://jsonplaceholder.typicode.com';
+  static const String baseUrl = 'https://mobile-ios-login.zani0x03.eti.br/api';
 
-  Future<List<Album>> fetchAlbums(String token) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/albums'),
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
-    );
+  static const String sistemaId = 'd7f0beee-ac36-4cdf-8dba-7c752ace6ec6';
 
-    if (response.statusCode == 200) {
-      final List list = jsonDecode(response.body);
-      return list.map((e) => Album.fromJson(e)).toList();
-    } else {
-      throw Exception('Erro ao buscar treinos');
-    }
-  }
-
-  Future<Album> createAlbum(String title, String token) async {
+  static Future<Map<String, dynamic>?> login(
+    String username,
+    String password,
+  ) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/albums'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({'title': title}),
-    );
-
-    if (response.statusCode == 201) {
-      return Album.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Erro ao criar treino');
-    }
-  }
-
-  Future<Album> updateAlbum(int id, String title, String token) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/albums/$id'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({'title': title}),
+      Uri.parse('$baseUrl/auth/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'username': username,
+        'password': password,
+        'sistemaId': sistemaId,
+      }),
     );
 
     if (response.statusCode == 200) {
-      return Album.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Erro ao atualizar treino');
+      return jsonDecode(response.body);
     }
+
+    return null;
   }
 
-  Future<void> deleteAlbum(int id, String token) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/albums/$id'),
-      headers: {'Authorization': 'Bearer $token'},
+  static Future<bool> register(String nome, String email, String senha) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'name': nome,
+        'surname': '',
+        'login': email,
+        'email': email,
+        'password': senha,
+        'sistemaId': sistemaId,
+      }),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao deletar treino');
-    }
+    return response.statusCode == 200 || response.statusCode == 201;
   }
 }

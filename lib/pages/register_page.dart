@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/user_dao.dart';
+import '../services/api_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -36,6 +37,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 if (nome.isEmpty || email.isEmpty || senha.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Preencha tudo')),
+                  );
+                  return;
+                }
+
+                final sucesso = await ApiService.register(nome, email, senha);
+
+                if (!sucesso) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Erro ao cadastrar')),
                   );
                   return;
                 }

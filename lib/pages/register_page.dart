@@ -34,29 +34,58 @@ class _RegisterPageState extends State<RegisterPage> {
 
             ElevatedButton(
               onPressed: () async {
-                if (nome.isEmpty || email.isEmpty || senha.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Preencha tudo')),
+                try {
+                  if (nome.isEmpty || email.isEmpty || senha.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Preencha todos os campos'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  final sucesso = await ApiService.register(
+                    nome,
+                    email,
+                    senha,
                   );
-                  return;
-                }
 
-                final sucesso = await ApiService.register(nome, email, senha);
+                  if (!sucesso) {
+                    if (!mounted) return;
 
-                if (!sucesso) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Erro ao cadastrar')),
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Erro ao cadastrar usuário'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  await UserDAO().criarUsuario(
+                    nome,
+                    email,
+                    senha,
                   );
-                  return;
+
+                  if (!mounted) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Usuário criado com sucesso!'),
+                    ),
+                  );
+
+                  Navigator.pop(context);
+
+                } catch (e) {
+                  if (!mounted) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erro: $e'),
+                    ),
+                  );
                 }
-
-                await UserDAO().criarUsuario(nome, email, senha);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Usuário criado!')),
-                );
-
-                Navigator.pop(context);
               },
               child: const Text('Cadastrar'),
             ),

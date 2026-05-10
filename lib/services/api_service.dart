@@ -31,19 +31,22 @@ class ApiService {
   }
 
   static Future<bool> register(String nome, String email, String senha) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'name': nome,
-        'surname': '',
-        'login': email,
-        'email': email,
-        'password': senha,
-        'sistemaId': sistemaId,
-      }),
-    );
+  final response = await http.post(
+    Uri.parse('$baseUrl/register'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'name': nome.trim(),
+      'surname': nome.trim(),
+      'login': email.trim(),
+      'email': email.trim(),
+      'password': senha.trim(),
+      'sistemaId': sistemaId,
+    }),
+  );
 
-    return response.statusCode == 200 || response.statusCode == 201;
-  }
+  print("STATUS REGISTER: ${response.statusCode}");
+  print("BODY REGISTER: ${response.body}");
+
+  return response.statusCode == 200 || response.statusCode == 201;
+}
 }

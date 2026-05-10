@@ -140,8 +140,10 @@ class _LoginPageState extends State<LoginPage> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => NavBarPage(user: user!)),
-        );
+          MaterialPageRoute(
+            builder: (_) => NavBarPage(user: user!),
+          ),
+        ); 
       } else {
         ScaffoldMessenger.of(
           context,

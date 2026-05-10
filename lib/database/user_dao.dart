@@ -30,7 +30,14 @@ class UserDAO {
       return 'email_existente';
     }
 
-    await db.insert('usuarios', {'nome': nome, 'email': email, 'senha': senha});
+    await db.insert('usuarios', {
+      'nome': nome,
+      'email': email,
+      'senha': senha,
+      'peso': '75',
+      'altura': '161',
+      'idade': '21',
+    });
 
     return 'sucesso';
   }

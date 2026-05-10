@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/user_dao.dart';
+import '../services/auth_service.dart';
 
 class PerfilPage extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -154,19 +155,34 @@ class _PerfilPageState extends State<PerfilPage> {
             ),
 
             const SizedBox(height: 20),
-
-            if (editando)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ElevatedButton(
-                  onPressed: _salvar,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
-                    minimumSize: const Size(double.infinity, 50),
+            
+              if (editando)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _salvar,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.purple,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        minimumSize: const Size(0, 40),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                      ),
+                      child: const Text(
+                        'Salvar',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   ),
-                  child: const Text('Salvar'),
                 ),
-              ),
 
             const SizedBox(height: 30),
           ],
@@ -203,23 +219,34 @@ class _PerfilPageState extends State<PerfilPage> {
   }
 
   Future<void> _salvar() async {
-    await UserDAO().atualizarUsuario(
-      widget.user['id'],
-      nomeController.text,
-      emailController.text,
-      pesoController.text,
-      alturaController.text,
-      idadeController.text,
-    );
+  await UserDAO().atualizarUsuario(
+    widget.user['id'],
+    nomeController.text,
+    emailController.text,
+    pesoController.text,
+    alturaController.text,
+    idadeController.text,
+  );
 
-    setState(() {
-      editando = false;
-    });
+  final usuarioAtualizado = await UserDAO().buscarPorEmail(
+    emailController.text,
+  );
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Perfil atualizado')));
-  }
+  await AuthService.saveUser(usuarioAtualizado!);
+
+  if (!mounted) return;
+
+  setState(() {
+    editando = false;
+  });
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Perfil atualizado'),
+    ),
+  );
+
+}
 }
 
 class _CardInfo extends StatelessWidget {

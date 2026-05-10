@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/auth_service.dart';
 import 'package:projeto_flutter_agrfit/pages/chatbot.dart';
 import 'package:projeto_flutter_agrfit/pages/configuracao.dart';
 import 'package:projeto_flutter_agrfit/pages/perfil.dart';
@@ -18,23 +19,30 @@ class NavBarPage extends StatefulWidget {
 class _NavBarPageState extends State<NavBarPage> {
   int _currentIndex = 0;
 
-  late final List<Widget> _pages;
-  @override
-  void initState() {
-    super.initState();
-
-    _pages = [
-      TreinoPage(user: widget.user),
-      const ChatbotPage(),
-      PerfilPage(user: widget.user),
-      const ConfigPage(),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: [
+        TreinoPage(user: widget.user),
+        const ChatbotPage(),
+
+        FutureBuilder<Map<String, dynamic>?>(
+          future: AuthService.getUser(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            return PerfilPage(
+              user: snapshot.data!,
+            );
+          },
+        ),
+
+        const ConfigPage(),
+      ][_currentIndex],
       backgroundColor: Colors.black,
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(12),

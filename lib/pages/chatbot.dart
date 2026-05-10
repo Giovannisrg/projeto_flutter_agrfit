@@ -52,6 +52,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
     final token = await AuthService.getToken();
 
+    print("TOKEN NO CHATBOT: $token");
+
     if (token == null) {
       setState(() {
         mensagens.add({"texto": "Usuário não autenticado.", "isUser": false});
@@ -62,14 +64,33 @@ class _ChatbotPageState extends State<ChatbotPage> {
       return;
     }
 
-    final resposta = await ChatService.enviarMensagem(pergunta, token);
+    try {
+      final resposta = await ChatService.enviarMensagem(pergunta, token);
 
-    setState(() {
-      mensagens.add({"texto": resposta, "isUser": false});
+        if (!mounted) return;
 
-      carregando = false;
-    });
-  }
+        setState(() {
+          mensagens.add({
+            "texto": resposta,
+            "isUser": false,
+          });
+
+          carregando = false;
+        });
+
+      } catch (e) {
+        if (!mounted) return;
+
+        setState(() {
+          mensagens.add({
+            "texto": "Erro: $e",
+            "isUser": false,
+          });
+
+          carregando = false;
+        });
+      }
+      }
 
   @override
   Widget build(BuildContext context) {

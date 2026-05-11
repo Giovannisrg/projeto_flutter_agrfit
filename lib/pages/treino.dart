@@ -289,6 +289,7 @@ String traduzirGrupo(String grupo) {
   }
 
   Future<void> excluirTreino(Map treino) async {
+      if (!mounted) return;
   final confirmar = await showDialog<bool>(
     context: context,
     builder: (_) => AlertDialog(

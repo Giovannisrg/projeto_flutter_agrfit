@@ -195,15 +195,12 @@ class _ConfigPageState extends State<ConfigPage> {
     await DBHelper.instance.closeDatabase();
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('user');
+    await prefs.clear();
 
     if (!context.mounted) return;
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const MainApp(),
-      ),
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      '/',
       (route) => false,
     );
   }

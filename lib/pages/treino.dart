@@ -272,7 +272,7 @@ String traduzirGrupo(String grupo) {
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Excluir', style: TextStyle(color: Color.fromARGB(146, 32, 30, 30))),
+            child: const Text('Excluir', style: TextStyle(color: Colors.purple)),
           ),
         ],
       ),
@@ -283,7 +283,11 @@ String traduzirGrupo(String grupo) {
 
       if (!mounted) return;
 
-      carregarTreinos();
+      setState(() {
+        treinos.removeWhere(
+          (t) => t['id'] == treino['id'],
+        );
+      });
     }
   }
 

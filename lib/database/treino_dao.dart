@@ -55,20 +55,29 @@ class TreinoDAO {
   Future<int> deletarTreino(int id) async {
     final db = await DBHelper.instance.database;
 
+    print("Tentando excluir treino ID: $id");
+
     await db.delete(
       'exercicios',
       where: 'treino_id = ?',
       whereArgs: [id],
     );
 
-    return await db.delete(
+    final linhasAfetadas = await db.delete(
       'treinos',
       where: 'id = ?',
       whereArgs: [id],
     );
-  }
 
-  Future<void> marcarFinalizado(int id) async {
+    print("Linhas deletadas: $linhasAfetadas");
+
+    if (linhasAfetadas == 0) {
+      throw Exception("Treino não encontrado no banco.");
+    }
+
+    return linhasAfetadas;
+  }
+    Future<void> marcarFinalizado(int id) async {
     final db = await DBHelper.instance.database;
 
     await db.update(

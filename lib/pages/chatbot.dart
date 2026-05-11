@@ -16,6 +16,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   bool carregando = false;
   bool telaAtiva = true;
+  int requestId = 0;
 
   List<Map<String, dynamic>> mensagens = [
     {
@@ -38,6 +39,11 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   Future<void> enviarMensagem() async {
+
+    if (carregando) return;
+
+    if (!mounted || !telaAtiva) return;
+
     if (_controller.text.trim().isEmpty) return;
 
     final pergunta = _controller.text;
@@ -53,10 +59,14 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
     _controller.clear();
 
+    final currentRequest = ++requestId;
+
     final token = await AuthService.getToken();
 
+    if (!mounted || !telaAtiva || currentRequest != requestId) return;
+
     if (token == null) {
-      if (!mounted || !telaAtiva) return;
+        if (!mounted || !telaAtiva || currentRequest != requestId) return;
 
       setState(() {
         mensagens.add({
@@ -76,7 +86,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
         token,
       );
 
-      if (!mounted || !telaAtiva) return;
+      if (!mounted || !telaAtiva || currentRequest != requestId) return;
 
       setState(() {
         mensagens.add({
@@ -87,7 +97,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
         carregando = false;
       });
     } catch (e) {
-      if (!mounted || !telaAtiva) return;
+      if (!mounted || !telaAtiva || currentRequest != requestId) return;
 
       setState(() {
         mensagens.add({
@@ -103,6 +113,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
   @override
   void dispose() {
     telaAtiva = false;
+    requestId++;
     _controller.dispose();
     super.dispose();
   }

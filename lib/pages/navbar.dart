@@ -42,9 +42,10 @@ class _NavBarPageState extends State<NavBarPage> {
         TreinoPage(user: widget.user),
 
         _currentIndex == 1
-            ? const ChatbotPage()
-            : const SizedBox(),
-
+          ? ChatbotPage(
+              key: UniqueKey(),
+            )
+          : const SizedBox(),
         usuarioPerfil == null
             ? const Center(
                 child: CircularProgressIndicator(),

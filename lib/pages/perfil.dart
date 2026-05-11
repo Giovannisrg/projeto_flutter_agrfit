@@ -138,24 +138,18 @@ class _PerfilPageState extends State<PerfilPage> {
                   ),
                   const SizedBox(height: 10),
 
-                  editando
-                      ? TextField(
-                          controller: emailController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                          ),
-                        )
-                      : Text(
-                          emailController.text,
-                          style: const TextStyle(color: Colors.white54),
-                        ),
+                  Text(
+                    emailController.text,
+                    style: const TextStyle(
+                      color: Colors.white54,
+                    ),
+                  )
                 ],
               ),
             ),
 
             const SizedBox(height: 20),
-            
+
               if (editando)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),

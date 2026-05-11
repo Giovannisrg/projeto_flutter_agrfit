@@ -15,6 +15,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
   final TextEditingController _controller = TextEditingController();
 
   bool carregando = false;
+  bool telaAtiva = true;
 
   List<Map<String, dynamic>> mensagens = [
     {
@@ -31,7 +32,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
     if (widget.perguntaInicial != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         _controller.text = widget.perguntaInicial!;
-
         await enviarMensagem();
       });
     }
@@ -43,7 +43,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
     final pergunta = _controller.text;
 
     setState(() {
-      mensagens.add({"texto": pergunta, "isUser": true});
+      mensagens.add({
+        "texto": pergunta,
+        "isUser": true,
+      });
 
       carregando = true;
     });
@@ -55,8 +58,13 @@ class _ChatbotPageState extends State<ChatbotPage> {
     print("TOKEN NO CHATBOT: $token");
 
     if (token == null) {
+      if (!mounted || !telaAtiva) return;
+
       setState(() {
-        mensagens.add({"texto": "Usuário não autenticado.", "isUser": false});
+        mensagens.add({
+          "texto": "Usuário não autenticado.",
+          "isUser": false,
+        });
 
         carregando = false;
       });
@@ -65,45 +73,55 @@ class _ChatbotPageState extends State<ChatbotPage> {
     }
 
     try {
-      final resposta = await ChatService.enviarMensagem(pergunta, token);
+      final resposta = await ChatService.enviarMensagem(
+        pergunta,
+        token,
+      );
 
-        if (!mounted) return;
+      if (!mounted || !telaAtiva) return;
 
-        setState(() {
-          mensagens.add({
-            "texto": resposta,
-            "isUser": false,
-          });
-
-          carregando = false;
+      setState(() {
+        mensagens.add({
+          "texto": resposta,
+          "isUser": false,
         });
 
-      } catch (e) {
-        if (!mounted) return;
+        carregando = false;
+      });
+    } catch (e) {
+      if (!mounted || !telaAtiva) return;
 
-        setState(() {
-          mensagens.add({
-            "texto": "Erro: $e",
-            "isUser": false,
-          });
-
-          carregando = false;
+      setState(() {
+        mensagens.add({
+          "texto": "Erro: $e",
+          "isUser": false,
         });
-      }
-      }
+
+        carregando = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    telaAtiva = false;
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-
       appBar: AppBar(
-        title: const Text('Adrianna', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Adrianna',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.black,
         centerTitle: true,
         elevation: 0,
       ),
-
       body: Column(
         children: [
           Expanded(
@@ -113,7 +131,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
               itemBuilder: (context, index) {
                 final msg = mensagens[index];
 
-                return _buildMensagem(msg["texto"], msg["isUser"]);
+                return _buildMensagem(
+                  msg["texto"],
+                  msg["isUser"],
+                );
               },
             ),
           ),
@@ -121,7 +142,9 @@ class _ChatbotPageState extends State<ChatbotPage> {
           if (carregando)
             const Padding(
               padding: EdgeInsets.only(bottom: 10),
-              child: CircularProgressIndicator(color: Colors.purple),
+              child: CircularProgressIndicator(
+                color: Colors.purple,
+              ),
             ),
 
           _buildInput(),
@@ -132,7 +155,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   Widget _buildMensagem(String texto, bool isUser) {
     return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      alignment:
+          isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 5),
         padding: const EdgeInsets.all(12),
@@ -143,7 +167,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
         ),
         child: Text(
           texto,
-          style: TextStyle(color: isUser ? Colors.purple : Colors.white),
+          style: TextStyle(
+            color:
+                isUser ? Colors.purple : Colors.white,
+          ),
         ),
       ),
     );
@@ -152,7 +179,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
   Widget _buildInput() {
     return Container(
       margin: const EdgeInsets.all(12),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 10,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
@@ -162,18 +192,24 @@ class _ChatbotPageState extends State<ChatbotPage> {
           Expanded(
             child: TextField(
               controller: _controller,
-              style: const TextStyle(color: Colors.purple),
+              style: const TextStyle(
+                color: Colors.purple,
+              ),
               decoration: const InputDecoration(
                 hintText: 'Digite sua mensagem...',
-                hintStyle: TextStyle(color: Colors.purple),
+                hintStyle: TextStyle(
+                  color: Colors.purple,
+                ),
                 border: InputBorder.none,
               ),
             ),
           ),
-
           GestureDetector(
             onTap: enviarMensagem,
-            child: const Icon(Icons.send, color: Colors.purple),
+            child: const Icon(
+              Icons.send,
+              color: Colors.purple,
+            ),
           ),
         ],
       ),

@@ -259,37 +259,50 @@ String traduzirGrupo(String grupo) {
   }
 
   Future<void> excluirTreino(Map treino) async {
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: const Text('Excluir treino', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Tem certeza que deseja excluir esse treino?',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Excluir', style: TextStyle(color: Colors.purple)),
-          ),
-        ],
+  final confirmar = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      backgroundColor: Colors.grey[900],
+      title: const Text(
+        'Excluir treino',
+        style: TextStyle(color: Colors.white),
       ),
-    );
+      content: const Text(
+        'Tem certeza que deseja excluir esse treino?',
+        style: TextStyle(color: Colors.white70),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancelar'),
+        ),
 
-    if (confirmar == true) {
-      await treinoDAO.deletarTreino(treino['id']);
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text(
+            'Excluir',
+            style: TextStyle(
+              color: Color.fromARGB(255, 90, 49, 159),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 
-      if (!mounted) return;
+  if (confirmar == true) {
+    await treinoDAO.deletarTreino(treino['id']);
 
-      setState(() {
-        treinos.removeWhere(
-          (t) => t['id'] == treino['id'],
-        );
-      });
-    }
+    if (!mounted) return;
+
+    setState(() {
+      treinos.removeWhere(
+        (t) => t['id'] == treino['id'],
+      );
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {

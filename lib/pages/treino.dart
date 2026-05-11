@@ -3,6 +3,7 @@ import 'package:projeto_flutter_agrfit/database/treino_dao.dart';
 import 'package:projeto_flutter_agrfit/database/exercicio_dao.dart';
 import 'package:projeto_flutter_agrfit/database/listas_dao.dart';
 import 'package:projeto_flutter_agrfit/pages/chatbot.dart';
+import '/services/auth_service.dart';
 import 'dart:async';
 
 class TreinoPage extends StatefulWidget {
@@ -59,17 +60,38 @@ String traduzirGrupo(String grupo) {
     carregarTreinos();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    carregarTreinos();
+  }
+
   Future<void> carregarTreinos() async {
-    final data = await treinoDAO.listarTreinos(widget.user['id']);
+    try {
+      final usuarioAtual = await AuthService.getUser();
 
-    if (!mounted) return;
+      if (usuarioAtual == null) return;
 
-    final ativos = data.where((t) => t['finalizado'] == 0).toList();
-    final finalizados = data.where((t) => t['finalizado'] == 1).toList();
+      final data = await treinoDAO.listarTreinos(
+        usuarioAtual['id'],
+      );
 
-    setState(() {
-      treinos = [...ativos, ...finalizados];
-    });
+      if (!mounted) return;
+
+      final ativos = data
+          .where((t) => t['finalizado'] == 0)
+          .toList();
+
+      final finalizados = data
+          .where((t) => t['finalizado'] == 1)
+          .toList();
+
+      setState(() {
+        treinos = [...ativos, ...finalizados];
+      });
+    } catch (e) {
+      print("Erro ao carregar treinos: $e");
+    }
   }
 
   Future<void> criarTreinoWizard() async {
@@ -136,8 +158,14 @@ String traduzirGrupo(String grupo) {
             
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text(
+                  'Cancelar',
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 90, 49, 159),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
               TextButton(
                 onPressed: () async {
@@ -292,15 +320,23 @@ String traduzirGrupo(String grupo) {
   );
 
   if (confirmar == true) {
-    await treinoDAO.deletarTreino(treino['id']);
+    try {
+      await treinoDAO.deletarTreino(treino['id']);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      treinos.removeWhere(
-        (t) => t['id'] == treino['id'],
+      await carregarTreinos();
+    } catch (e) {
+      print("Erro ao excluir treino: $e");
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Erro ao excluir treino"),
+        ),
       );
-    });
+    }
   }
 }
 

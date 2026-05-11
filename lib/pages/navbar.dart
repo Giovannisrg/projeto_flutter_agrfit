@@ -38,13 +38,14 @@ class _NavBarPageState extends State<NavBarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          TreinoPage(user: widget.user),
-          const ChatbotPage(),
+      body: [
+        TreinoPage(user: widget.user),
 
-          usuarioPerfil == null
+        _currentIndex == 1
+            ? const ChatbotPage()
+            : const SizedBox(),
+
+        usuarioPerfil == null
             ? const Center(
                 child: CircularProgressIndicator(),
               )
@@ -52,9 +53,8 @@ class _NavBarPageState extends State<NavBarPage> {
                 user: usuarioPerfil!,
               ),
 
-          const ConfigPage(),
-        ],
-      ),
+        const ConfigPage(),
+      ][_currentIndex],
       backgroundColor: Colors.black,
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(12),

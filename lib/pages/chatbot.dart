@@ -55,8 +55,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
     final token = await AuthService.getToken();
 
-    print("TOKEN NO CHATBOT: $token");
-
     if (token == null) {
       if (!mounted || !telaAtiva) return;
 

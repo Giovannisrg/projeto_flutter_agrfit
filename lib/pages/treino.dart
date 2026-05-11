@@ -214,7 +214,7 @@ String traduzirGrupo(String grupo) {
                     if (!mounted) return;
 
                     Navigator.pop(context);
-                    carregarTreinos();
+                    await carregarTreinos();
                                     },
                 child: const Text('Criar'),
               ),
@@ -372,27 +372,7 @@ String traduzirGrupo(String grupo) {
                                 IconButton(
                                   icon: const Icon(Icons.delete, color: Colors.purple),
                                   onPressed: () async {
-                                    final confirmar = await showDialog(
-                                      context: context,
-                                      builder: (_) => AlertDialog(
-                                        title: const Text('Excluir treino?'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(context, false),
-                                            child: const Text('Cancelar'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(context, true),
-                                            child: const Text('Excluir'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-
-                                    if (confirmar == true) {
-                                      await treinoDAO.deletarTreino(treino['id']);
-                                      carregarTreinos();
-                                    }
+                                    await excluirTreino(treino);
                                   },
                                 ),
                               ],

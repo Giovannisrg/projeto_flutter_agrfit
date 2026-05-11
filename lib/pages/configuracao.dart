@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
+import '../database/db_helper.dart';
 
 class ConfigPage extends StatefulWidget {
   const ConfigPage({super.key});
@@ -191,14 +192,19 @@ class _ConfigPageState extends State<ConfigPage> {
   }
 
   void _logout(BuildContext context) async {
+    await DBHelper.instance.closeDatabase();
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove('token');
+    await prefs.remove('user');
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
-    Navigator.of(this.context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const MainApp()),
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const MainApp(),
+      ),
       (route) => false,
     );
   }
-}
+  }

@@ -89,7 +89,9 @@ String traduzirGrupo(String grupo) {
       setState(() {
         treinos = [...ativos, ...finalizados];
       });
-    } catch (e) {
+    } 
+    
+    catch (e) {
       print("Erro ao carregar treinos: $e");
     }
   }
@@ -320,18 +322,24 @@ String traduzirGrupo(String grupo) {
   );
 
   if (confirmar == true) {
+    if (!mounted) return;
+
     try {
       await treinoDAO.deletarTreino(treino['id']);
 
       if (!mounted) return;
 
       await carregarTreinos();
-    } catch (e) {
+    } 
+    
+    catch (e) {
       print("Erro ao excluir treino: $e");
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      final messenger = ScaffoldMessenger.maybeOf(context);
+
+      messenger?.showSnackBar(
         const SnackBar(
           content: Text("Erro ao excluir treino"),
         ),

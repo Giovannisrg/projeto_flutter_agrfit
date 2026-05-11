@@ -22,27 +22,30 @@ class _NavBarPageState extends State<NavBarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: [
-        TreinoPage(user: widget.user),
-        const ChatbotPage(),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          TreinoPage(user: widget.user),
+          const ChatbotPage(),
 
-        FutureBuilder<Map<String, dynamic>?>(
-          future: AuthService.getUser(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(
-                child: CircularProgressIndicator(),
+          FutureBuilder<Map<String, dynamic>?>(
+            future: AuthService.getUser(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              return PerfilPage(
+                user: snapshot.data!,
               );
-            }
+            },
+          ),
 
-            return PerfilPage(
-              user: snapshot.data!,
-            );
-          },
-        ),
-
-        const ConfigPage(),
-      ][_currentIndex],
+          const ConfigPage(),
+        ],
+      ),
       backgroundColor: Colors.black,
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(12),

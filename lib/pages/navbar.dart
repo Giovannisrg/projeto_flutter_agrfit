@@ -19,6 +19,22 @@ class NavBarPage extends StatefulWidget {
 class _NavBarPageState extends State<NavBarPage> {
   int _currentIndex = 0;
 
+  Map<String, dynamic>? usuarioPerfil;
+
+  @override
+  void initState() {
+    super.initState();
+    carregarUsuario();
+  }
+
+  Future<void> carregarUsuario() async {
+    usuarioPerfil = await AuthService.getUser();
+
+    if (!mounted) return;
+
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,20 +44,13 @@ class _NavBarPageState extends State<NavBarPage> {
           TreinoPage(user: widget.user),
           const ChatbotPage(),
 
-          FutureBuilder<Map<String, dynamic>?>(
-            future: AuthService.getUser(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-
-              return PerfilPage(
-                user: snapshot.data!,
-              );
-            },
-          ),
+          usuarioPerfil == null
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : PerfilPage(
+                user: usuarioPerfil!,
+              ),
 
           const ConfigPage(),
         ],

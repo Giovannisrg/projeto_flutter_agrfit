@@ -54,7 +54,9 @@ class _NavBarPageState extends State<NavBarPage> {
                 user: usuarioPerfil!,
               ),
 
-        const ConfigPage(),
+        ConfigPage(
+          key: UniqueKey(),
+        ),
       ][_currentIndex],
       backgroundColor: Colors.black,
       bottomNavigationBar: Container(
@@ -81,7 +83,13 @@ class _NavBarPageState extends State<NavBarPage> {
     bool isSelected = _currentIndex == index;
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
+        if (index == 2) {
+          await carregarUsuario();
+        }
+
+        if (!mounted) return;
+
         setState(() {
           _currentIndex = index;
         });

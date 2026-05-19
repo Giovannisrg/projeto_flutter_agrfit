@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../main.dart';
 import '../database/db_helper.dart';
+import '../main.dart' show salvarTema, temaAtual;
 
 class ConfigPage extends StatefulWidget {
   const ConfigPage({super.key});
@@ -12,6 +12,7 @@ class ConfigPage extends StatefulWidget {
 
 class _ConfigPageState extends State<ConfigPage> {
   bool notificacoesAtivas = true;
+  bool temaClaro = false;
 
   @override
   void initState() {
@@ -23,30 +24,28 @@ class _ConfigPageState extends State<ConfigPage> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       notificacoesAtivas = prefs.getBool('notificacoes') ?? true;
+      temaClaro = temaAtual.value == ThemeMode.light;
     });
   }
 
   Future<void> _toggleNotificacoes() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      notificacoesAtivas = !notificacoesAtivas;
-    });
+    setState(() => notificacoesAtivas = !notificacoesAtivas);
     await prefs.setBool('notificacoes', notificacoesAtivas);
+  }
+
+  Future<void> _toggleTema() async {
+    final novoModo = temaClaro ? ThemeMode.dark : ThemeMode.light;
+    await salvarTema(novoModo);
+    setState(() => temaClaro = !temaClaro);
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        title: const Text(
-          'Configurações',
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Configurações'), centerTitle: true),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -54,18 +53,35 @@ class _ConfigPageState extends State<ConfigPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildButton('Aparência', onPressed: () => _showEmBreve(context)),
+                // ── Aparência — botão igual aos outros, com ícone dinâmico ──
                 _buildButton(
-                  'Privacidade',
-                  onPressed: () => _showPrivacidade(context),
+                  context,
+                  temaClaro ? 'Modo claro' : 'Modo escuro',
+                  onPressed: _toggleTema,
                 ),
+
+                _buildButton(context, 'Privacidade',
+                    onPressed: () => _showPrivacidade(context)),
+
+                // ── Notificações — botão com estado inline ─────────────────
                 _buildButton(
-                  'Notificações: ${notificacoesAtivas ? "Ligadas" : "Desligadas"}',
+                  context,
+                  notificacoesAtivas
+                      ? 'Notificações: Ligadas'
+                      : 'Notificações: Desligadas',
                   onPressed: _toggleNotificacoes,
                 ),
-                _buildButton('Preferências de treino', onPressed: () => _showEmBreve(context)),
-                _buildButton('Ajuda', onPressed: () => _showAjuda(context)),
-                _buildButton('Sair', onPressed: () => _confirmLogout(context)),
+
+                _buildButton(context, 'Sobre o App',
+                    onPressed: () => _showSobre(context)),
+
+                _buildButton(context, 'Ajuda',
+                    onPressed: () => _showAjuda(context)),
+
+                const SizedBox(height: 20),
+
+                _buildButton(context, 'Sair',
+                    onPressed: () => _confirmLogout(context), isSair: true),
               ],
             ),
           ),
@@ -74,15 +90,22 @@ class _ConfigPageState extends State<ConfigPage> {
     );
   }
 
-  Widget _buildButton(String text, {VoidCallback? onPressed}) {
+  // ── Botão padrão (todos do mesmo tamanho) ─────────────────────────────────
+  Widget _buildButton(
+    BuildContext context,
+    String text, {
+    VoidCallback? onPressed,
+    bool isSair = false,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
+      width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor:
-              text == 'Sair' ? Colors.red.shade700 : Colors.purple,
+              isSair ? Colors.red.shade700 : Theme.of(context).colorScheme.primary,
           foregroundColor: Colors.white,
-          minimumSize: const Size(300, 55),
+          minimumSize: const Size(double.infinity, 55),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -93,18 +116,34 @@ class _ConfigPageState extends State<ConfigPage> {
     );
   }
 
-  void _showEmBreve(BuildContext context) {
+  void _showSobre(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('🚧 Em breve'),
-        content: const Text(
-          'Essa funcionalidade está em desenvolvimento e estará disponível em breve.',
+        title: const Text('Sobre o App'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('AGR Fit', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            SizedBox(height: 6),
+            Text('Versão 1.0.0'),
+            SizedBox(height: 12),
+            Text('Desenvolvido por:', style: TextStyle(fontWeight: FontWeight.w600)),
+            SizedBox(height: 4),
+            Text('• Ana Júlia Morais Moreira'),
+            Text('• Rafaela da Silva'),
+            Text('• Giovanni S. R. Gemignani'),
+            SizedBox(height: 12),
+            Text('Ciência da Computação — Grupo Anchieta'),
+            SizedBox(height: 4),
+            Text('Disciplina: Desenvolvimento Mobile'),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: const Text('Fechar'),
           ),
         ],
       ),
@@ -123,9 +162,9 @@ class _ConfigPageState extends State<ConfigPage> {
             Text('Seus dados são armazenados localmente no dispositivo.'),
             SizedBox(height: 10),
             Text('Informações coletadas:'),
-            Text('- Nome'),
-            Text('- Email'),
-            Text('- Peso, altura e idade'),
+            Text('• Nome'),
+            Text('• Email'),
+            Text('• Peso, altura e idade'),
             SizedBox(height: 10),
             Text('Esses dados são utilizados apenas para personalização dos treinos.'),
             SizedBox(height: 10),
@@ -193,15 +232,9 @@ class _ConfigPageState extends State<ConfigPage> {
 
   void _logout(BuildContext context) async {
     await DBHelper.instance.closeDatabase();
-
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-
     if (!context.mounted) return;
-
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      '/',
-      (route) => false,
-    );
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
-  }
+}

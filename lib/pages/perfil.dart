@@ -23,34 +23,34 @@ class _PerfilPageState extends State<PerfilPage> {
   @override
   void initState() {
     super.initState();
+    nomeController    = TextEditingController(text: widget.user['nome']);
+    emailController   = TextEditingController(text: widget.user['email']);
+    pesoController    = TextEditingController(text: widget.user['peso']   ?? '75');
+    alturaController  = TextEditingController(text: widget.user['altura'] ?? '161');
+    idadeController   = TextEditingController(text: widget.user['idade']  ?? '21');
+  }
 
-    nomeController = TextEditingController(text: widget.user['nome']);
-    emailController = TextEditingController(text: widget.user['email']);
-
-    pesoController = TextEditingController(text: widget.user['peso'] ?? '75');
-    alturaController = TextEditingController(
-      text: widget.user['altura'] ?? '161',
-    );
-    idadeController = TextEditingController(text: widget.user['idade'] ?? '21');
+  @override
+  void dispose() {
+    nomeController.dispose();
+    emailController.dispose();
+    pesoController.dispose();
+    alturaController.dispose();
+    idadeController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Perfil'),
-        foregroundColor: const Color.fromARGB(255, 226, 226, 226),
-        backgroundColor: Colors.black,
-        centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(editando ? Icons.close : Icons.edit),
-            onPressed: () {
-              setState(() {
-                editando = !editando;
-              });
-            },
+            onPressed: () => setState(() => editando = !editando),
           ),
         ],
       ),
@@ -61,7 +61,7 @@ class _PerfilPageState extends State<PerfilPage> {
 
             CircleAvatar(
               radius: 50,
-              backgroundColor: Colors.purple,
+              backgroundColor: cs.primary,
               child: Text(
                 nomeController.text.isNotEmpty
                     ? nomeController.text[0].toUpperCase()
@@ -78,47 +78,34 @@ class _PerfilPageState extends State<PerfilPage> {
                     child: TextField(
                       controller: nomeController,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 22),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                      ),
+                      style: TextStyle(color: cs.onSurface, fontSize: 22),
+                      decoration: const InputDecoration(border: InputBorder.none),
                     ),
                   )
                 : Text(
                     nomeController.text,
-                    style: const TextStyle(color: Colors.white, fontSize: 22),
+                    style: TextStyle(color: cs.onSurface, fontSize: 22),
                   ),
 
             const SizedBox(height: 5),
-
-            const Text('Brasil 🇧🇷', style: TextStyle(color: Colors.white54)),
+            Text('Brasil 🇧🇷', style: TextStyle(color: cs.onSurface.withOpacity(0.5))),
 
             const SizedBox(height: 20),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _editavelBox('Peso', pesoController, 'kg'),
-                _editavelBox('Altura', alturaController, 'cm'),
-                _editavelBox('Idade', idadeController, ''),
+                _editavelBox(context, 'Peso',   pesoController,   'kg'),
+                _editavelBox(context, 'Altura', alturaController, 'cm'),
+                _editavelBox(context, 'Idade',  idadeController,  ''),
               ],
             ),
 
             const SizedBox(height: 20),
 
-            _CardInfo(
-              icon: Icons.favorite,
-              title: '70 bpm',
-              subtitle: 'Batimentos',
-            ),
-
+            _CardInfo(icon: Icons.favorite,           title: '70 bpm',    subtitle: 'Batimentos'),
             const SizedBox(height: 10),
-
-            _CardInfo(
-              icon: Icons.local_fire_department,
-              title: '28500 kcal',
-              subtitle: 'Calorias',
-            ),
+            _CardInfo(icon: Icons.local_fire_department, title: '28500 kcal', subtitle: 'Calorias'),
 
             const SizedBox(height: 20),
 
@@ -126,57 +113,44 @@ class _PerfilPageState extends State<PerfilPage> {
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey[900],
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Email',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
+                  Text('Email', style: TextStyle(color: cs.onSurface, fontSize: 16)),
                   const SizedBox(height: 10),
-
                   Text(
                     emailController.text,
-                    style: const TextStyle(
-                      color: Colors.white54,
-                    ),
-                  )
+                    style: TextStyle(color: cs.onSurface.withOpacity(0.5)),
+                  ),
                 ],
               ),
             ),
 
             const SizedBox(height: 20),
 
-              if (editando)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _salvar,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.purple,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        minimumSize: const Size(0, 40),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                      child: const Text(
-                        'Salvar',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
+            if (editando)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _salvar,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cs.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      minimumSize: const Size(0, 40),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
                     ),
+                    child: const Text('Salvar', style: TextStyle(fontSize: 15)),
                   ),
                 ),
+              ),
 
             const SizedBox(height: 30),
           ],
@@ -186,10 +160,12 @@ class _PerfilPageState extends State<PerfilPage> {
   }
 
   Widget _editavelBox(
+    BuildContext context,
     String title,
     TextEditingController controller,
     String sufixo,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
         SizedBox(
@@ -198,49 +174,41 @@ class _PerfilPageState extends State<PerfilPage> {
             controller: controller,
             enabled: editando,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 18),
+            style: TextStyle(color: cs.onSurface, fontSize: 18),
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               border: InputBorder.none,
               suffixText: sufixo,
-              suffixStyle: const TextStyle(color: Colors.white54),
+              suffixStyle: TextStyle(color: cs.onSurface.withOpacity(0.5)),
             ),
           ),
         ),
-        Text(title, style: const TextStyle(color: Colors.white54)),
+        Text(title, style: TextStyle(color: cs.onSurface.withOpacity(0.5))),
       ],
     );
   }
 
   Future<void> _salvar() async {
-  await UserDAO().atualizarUsuario(
-    widget.user['id'],
-    nomeController.text,
-    emailController.text,
-    pesoController.text,
-    alturaController.text,
-    idadeController.text,
-  );
+    await UserDAO().atualizarUsuario(
+      widget.user['id'],
+      nomeController.text,
+      emailController.text,
+      pesoController.text,
+      alturaController.text,
+      idadeController.text,
+    );
 
-  final usuarioAtualizado = await UserDAO().buscarPorEmail(
-    emailController.text,
-  );
+    final usuarioAtualizado = await UserDAO().buscarPorEmail(emailController.text);
+    await AuthService.saveUser(usuarioAtualizado!);
 
-  await AuthService.saveUser(usuarioAtualizado!);
+    if (!mounted) return;
 
-  if (!mounted) return;
+    setState(() => editando = false);
 
-  setState(() {
-    editando = false;
-  });
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('Perfil atualizado'),
-    ),
-  );
-
-}
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Perfil atualizado')),
+    );
+  }
 }
 
 class _CardInfo extends StatelessWidget {
@@ -256,20 +224,22 @@ class _CardInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.purple),
+          Icon(icon, color: cs.primary),
           const SizedBox(width: 10),
-          Text(title, style: const TextStyle(color: Colors.white)),
+          Text(title,    style: TextStyle(color: cs.onSurface)),
           const Spacer(),
-          Text(subtitle, style: const TextStyle(color: Colors.white54)),
+          Text(subtitle, style: TextStyle(color: cs.onSurface.withOpacity(0.5))),
         ],
       ),
     );

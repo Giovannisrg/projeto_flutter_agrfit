@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-
 import '../services/auth_service.dart';
-import 'package:projeto_flutter_agrfit/pages/chatbot.dart';
-import 'package:projeto_flutter_agrfit/pages/configuracao.dart';
-import 'package:projeto_flutter_agrfit/pages/perfil.dart';
-import 'package:projeto_flutter_agrfit/pages/treino.dart';
-
+import 'chatbot.dart';
+import 'configuracao.dart';
+import 'perfil.dart';
+import 'treino.dart';
 
 class NavBarPage extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -18,7 +16,6 @@ class NavBarPage extends StatefulWidget {
 
 class _NavBarPageState extends State<NavBarPage> {
   int _currentIndex = 0;
-
   Map<String, dynamic>? usuarioPerfil;
 
   @override
@@ -29,50 +26,43 @@ class _NavBarPageState extends State<NavBarPage> {
 
   Future<void> carregarUsuario() async {
     usuarioPerfil = await AuthService.getUser();
-
     if (!mounted) return;
-
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: [
         TreinoPage(user: widget.user),
 
         _currentIndex == 1
-          ? ChatbotPage(
-              key: UniqueKey(),
-            )
-          : const SizedBox(),
-        usuarioPerfil == null
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
-            : PerfilPage(
-                user: usuarioPerfil!,
-              ),
+            ? ChatbotPage(key: UniqueKey())
+            : const SizedBox(),
 
-        ConfigPage(
-          key: UniqueKey(),
-        ),
+        usuarioPerfil == null
+            ? const Center(child: CircularProgressIndicator())
+            : PerfilPage(user: usuarioPerfil!),
+
+        ConfigPage(key: UniqueKey()),
       ][_currentIndex],
-      backgroundColor: Colors.black,
+
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.purple,
+          color: cs.primary,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildItem(Icons.fitness_center, 0),
-            _buildItem(Icons.smart_toy, 1),
-            _buildItem(Icons.person, 2),
-            _buildItem(Icons.settings, 3),
+            _buildItem(Icons.smart_toy,      1),
+            _buildItem(Icons.person,         2),
+            _buildItem(Icons.settings,       3),
           ],
         ),
       ),
@@ -80,32 +70,23 @@ class _NavBarPageState extends State<NavBarPage> {
   }
 
   Widget _buildItem(IconData icon, int index) {
-    bool isSelected = _currentIndex == index;
+    final isSelected = _currentIndex == index;
 
     return GestureDetector(
       onTap: () async {
-        if (index == 2) {
-          await carregarUsuario();
-        }
-
+        if (index == 2) await carregarUsuario();
         if (!mounted) return;
-
-        setState(() {
-          _currentIndex = index;
-        });
+        setState(() => _currentIndex = index);
       },
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: isSelected
-            ? const BoxDecoration(
-                color: Color.fromARGB(255, 255, 255, 255),
-                shape: BoxShape.circle,
-              )
+            ? const BoxDecoration(color: Colors.white, shape: BoxShape.circle)
             : null,
         child: Icon(
           icon,
           color: isSelected
-              ? const Color.fromARGB(255, 90, 49, 159)
+              ? const Color(0xFF5A319F)
               : Colors.white,
         ),
       ),

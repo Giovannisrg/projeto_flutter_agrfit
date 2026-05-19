@@ -1,17 +1,33 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/navbar.dart';
 import 'pages/register_page.dart';
-import 'database/user_dao.dart';
-import 'database/db_helper.dart';
 import 'services/auth_service.dart';
 import 'services/api_service.dart';
+import 'database/db_helper.dart';
+import 'app_theme.dart';
+import 'database/user_dao.dart';
+
+// ── Notifier global de tema ────────────────────────────────────────────────
+final ValueNotifier<ThemeMode> temaAtual = ValueNotifier(ThemeMode.dark);
+
+Future<void> carregarTema() async {
+  final prefs = await SharedPreferences.getInstance();
+  final claro = prefs.getBool('tema_claro') ?? false;
+  temaAtual.value = claro ? ThemeMode.light : ThemeMode.dark;
+}
+
+Future<void> salvarTema(ThemeMode modo) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('tema_claro', modo == ThemeMode.light);
+  temaAtual.value = modo;
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await DBHelper.instance.database;
-
+  await carregarTema();
   runApp(const MainApp());
 }
 
@@ -20,30 +36,36 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: FutureBuilder<Map<String, dynamic>?>(
-        future: AuthService.getUser(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          final user = snapshot.data;
-
-          if (user != null) {
-            return NavBarPage(user: user);
-          }
-
-          return const LoginPage();
-        },
-      ),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: temaAtual,
+      builder: (context, modo, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme:      temaClaro,
+          darkTheme:  temaEscuro,
+          themeMode:  modo,
+          home: FutureBuilder<Map<String, dynamic>?>(
+            future: AuthService.getUser(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              final user = snapshot.data;
+              if (user != null) return NavBarPage(user: user);
+              return const LoginPage();
+            },
+          ),
+        );
+      },
     );
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// LOGIN PAGE
+// ─────────────────────────────────────────────────────────────────────────────
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -53,16 +75,14 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usuarioController = TextEditingController();
+  final TextEditingController _senhaController   = TextEditingController();
 
-  final TextEditingController _senhaController = TextEditingController();
-
-  String _nomeUsuario = "";
-  String _senhaUsuario = "";
+  String _nomeUsuario = '';
+  String _senhaUsuario = '';
+  bool   _loading = false;
 
   final PageController _controller = PageController();
-
   int _currentPage = 0;
-
   Timer? _timer;
 
   final List<String> banners = [
@@ -75,11 +95,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (_controller.hasClients) {
         _currentPage = (_currentPage + 1) % banners.length;
-
         _controller.animateToPage(
           _currentPage,
           duration: const Duration(milliseconds: 400),
@@ -92,23 +110,21 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     _timer?.cancel();
-
     _controller.dispose();
-
     _usuarioController.dispose();
-
     _senhaController.dispose();
-
     super.dispose();
   }
 
   Future<void> _login() async {
     if (_nomeUsuario.isEmpty || _senhaUsuario.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Preencha todos os campos')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preencha todos os campos')),
+      );
       return;
     }
+
+    setState(() => _loading = true);
 
     try {
       final response = await ApiService.login(_nomeUsuario, _senhaUsuario);
@@ -118,9 +134,7 @@ class _LoginPageState extends State<LoginPage> {
       if (response != null) {
         final token = response.accessToken;
 
-        Map<String, dynamic>? user = await UserDAO().buscarPorEmail(
-          _nomeUsuario,
-        );
+        Map<String, dynamic>? user = await UserDAO().buscarPorEmail(_nomeUsuario);
 
         if (user == null) {
           await UserDAO().criarUsuario(
@@ -128,168 +142,125 @@ class _LoginPageState extends State<LoginPage> {
             _nomeUsuario,
             _senhaUsuario,
           );
-
           user = await UserDAO().buscarPorEmail(_nomeUsuario);
         }
 
         await AuthService.saveToken(token);
-
         await AuthService.saveUser(user!);
 
         if (!mounted) return;
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => NavBarPage(user: user!),
-          ),
-        ); 
+          MaterialPageRoute(builder: (_) => NavBarPage(user: user!)),
+        );
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Login inválido')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login inválido')),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erro: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isClaro = Theme.of(context).brightness == Brightness.light;
+
     return Scaffold(
-      backgroundColor: Colors.black,
       body: Column(
         children: [
           AspectRatio(
             aspectRatio: 4 / 4,
             child: PageView.builder(
               controller: _controller,
-              itemBuilder: (context, index) {
-                final banner = banners[index % banners.length];
-
-                return _buildBanner(banner);
-              },
+              itemBuilder: (context, index) =>
+                  _buildBanner(banners[index % banners.length]),
             ),
           ),
-
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(30),
-                ),
+                color: cs.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
               ),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Center(
+                    Center(
                       child: Text(
                         'LOGIN',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: cs.onSurface,
                           fontWeight: FontWeight.bold,
                           fontSize: 24,
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
 
-                    const Text(
-                      'Email',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-
+                    Text('Usuário', style: TextStyle(color: cs.onSurface.withValues(alpha: 0.7))),
                     const SizedBox(height: 5),
-
                     TextField(
                       controller: _usuarioController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Digite seu email',
-                        hintStyle: const TextStyle(color: Colors.white38),
-                        filled: true,
-                        fillColor: Colors.grey[850],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      onChanged: (valor) {
-                        setState(() {
-                          _nomeUsuario = valor;
-                        });
-                      },
+                      style: TextStyle(color: cs.onSurface),
+                      onChanged: (v) => _nomeUsuario = v,
+                      decoration: InputDecoration(hintText: 'Digite seu email'),
                     ),
 
                     const SizedBox(height: 20),
-
-                    const Text(
-                      'Senha',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-
+                    Text('Senha', style: TextStyle(color: cs.onSurface.withOpacity(0.7))),
                     const SizedBox(height: 5),
-
                     TextField(
                       controller: _senhaController,
                       obscureText: true,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Digite sua senha',
-                        hintStyle: const TextStyle(color: Colors.white38),
-                        filled: true,
-                        fillColor: Colors.grey[850],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      onChanged: (valor) {
-                        setState(() {
-                          _senhaUsuario = valor;
-                        });
-                      },
+                      style: TextStyle(color: cs.onSurface),
+                      onChanged: (v) => _senhaUsuario = v,
+                      decoration: InputDecoration(hintText: 'Digite sua senha'),
                     ),
 
                     const SizedBox(height: 25),
-
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
+                          backgroundColor: cs.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        onPressed: _login,
-                        child: const Text('Login'),
+                        onPressed: _loading ? null : _login,
+                        child: _loading
+                            ? const SizedBox(
+                                height: 20, width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Login'),
                       ),
                     ),
 
                     const SizedBox(height: 15),
-
                     Center(
                       child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const RegisterPage(),
-                            ),
-                          );
-                        },
-                        child: const Text(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const RegisterPage()),
+                        ),
+                        child: Text(
                           'Criar conta',
-                          style: TextStyle(color: Colors.purple, fontSize: 14),
+                          style: TextStyle(color: cs.primary, fontSize: 14),
                         ),
                       ),
                     ),

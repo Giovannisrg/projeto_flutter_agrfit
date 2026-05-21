@@ -149,15 +149,13 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   Widget _buildInput(BuildContext context, bool isEscuro, ColorScheme cs) {
-    // No modo escuro: fundo roxo escuro, texto branco
-    // No modo claro:  fundo branco, texto roxo
-    final corFundo  = isEscuro ? cs.surface : Colors.white;
-    final corTexto  = isEscuro ? Colors.white : cs.primary;
-    final corHint   = isEscuro
-        ? Colors.white.withValues(alpha: 0.4)
+    final corFundo = isEscuro ? const Color(0xFF1C1C1C) : Colors.white;
+    final corTexto = isEscuro ? Colors.white : cs.primary;
+    final corHint  = isEscuro
+        ? Colors.white.withValues(alpha: 0.35)
         : cs.primary.withValues(alpha: 0.5);
-    final corBorda  = isEscuro
-        ? cs.primary.withValues(alpha: 0.5)
+    final corBorda = isEscuro
+        ? cs.primary.withValues(alpha: 0.6)
         : cs.onSurface.withValues(alpha: 0.15);
 
     return Container(
@@ -166,7 +164,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
       decoration: BoxDecoration(
         color: corFundo,
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: corBorda),
+        border: Border.all(color: corBorda, width: 1.5),
       ),
       child: Row(
         children: [
@@ -178,6 +176,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
                 hintText: 'Digite sua mensagem...',
                 hintStyle: TextStyle(color: corHint),
                 border: InputBorder.none,
+                filled: true,
+                fillColor: Colors.transparent,
               ),
             ),
           ),

@@ -5,11 +5,11 @@ import 'pages/navbar.dart';
 import 'pages/register_page.dart';
 import 'services/auth_service.dart';
 import 'services/api_service.dart';
+import 'services/notification_service.dart';
 import 'database/db_helper.dart';
-import 'app_theme.dart';
 import 'database/user_dao.dart';
+import 'app_theme.dart';
 
-// ── Notifier global de tema ────────────────────────────────────────────────
 final ValueNotifier<ThemeMode> temaAtual = ValueNotifier(ThemeMode.dark);
 
 Future<void> carregarTema() async {
@@ -28,6 +28,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DBHelper.instance.database;
   await carregarTema();
+  await NotificationService.init(); // ← inicializa notificações
   runApp(const MainApp());
 }
 
@@ -41,9 +42,9 @@ class MainApp extends StatelessWidget {
       builder: (context, modo, _) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme:      temaClaro,
-          darkTheme:  temaEscuro,
-          themeMode:  modo,
+          theme:     temaClaro,
+          darkTheme: temaEscuro,
+          themeMode: modo,
           home: FutureBuilder<Map<String, dynamic>?>(
             future: AuthService.getUser(),
             builder: (context, snapshot) {
@@ -63,9 +64,6 @@ class MainApp extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LOGIN PAGE
-// ─────────────────────────────────────────────────────────────────────────────
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -77,12 +75,12 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usuarioController = TextEditingController();
   final TextEditingController _senhaController   = TextEditingController();
 
-  String _nomeUsuario = '';
+  String _nomeUsuario  = '';
   String _senhaUsuario = '';
-  bool   _loading = false;
+  bool   _loading      = false;
 
   final PageController _controller = PageController();
-  int _currentPage = 0;
+  int    _currentPage = 0;
   Timer? _timer;
 
   final List<String> banners = [
@@ -134,7 +132,8 @@ class _LoginPageState extends State<LoginPage> {
       if (response != null) {
         final token = response.accessToken;
 
-        Map<String, dynamic>? user = await UserDAO().buscarPorEmail(_nomeUsuario);
+        Map<String, dynamic>? user =
+            await UserDAO().buscarPorEmail(_nomeUsuario);
 
         if (user == null) {
           await UserDAO().criarUsuario(
@@ -171,7 +170,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isClaro = Theme.of(context).brightness == Brightness.light;
 
     return Scaffold(
       body: Column(
@@ -189,7 +187,8 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
                 color: cs.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(30)),
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -207,24 +206,30 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    Text('Usuário', style: TextStyle(color: cs.onSurface.withValues(alpha: 0.7))),
+                    Text('Usuário',
+                        style: TextStyle(
+                            color: cs.onSurface.withValues(alpha: 0.7))),
                     const SizedBox(height: 5),
                     TextField(
                       controller: _usuarioController,
                       style: TextStyle(color: cs.onSurface),
                       onChanged: (v) => _nomeUsuario = v,
-                      decoration: InputDecoration(hintText: 'Digite seu email'),
+                      decoration:
+                          const InputDecoration(hintText: 'Digite seu email'),
                     ),
 
                     const SizedBox(height: 20),
-                    Text('Senha', style: TextStyle(color: cs.onSurface.withOpacity(0.7))),
+                    Text('Senha',
+                        style: TextStyle(
+                            color: cs.onSurface.withValues(alpha: 0.7))),
                     const SizedBox(height: 5),
                     TextField(
                       controller: _senhaController,
                       obscureText: true,
                       style: TextStyle(color: cs.onSurface),
                       onChanged: (v) => _senhaUsuario = v,
-                      decoration: InputDecoration(hintText: 'Digite sua senha'),
+                      decoration:
+                          const InputDecoration(hintText: 'Digite sua senha'),
                     ),
 
                     const SizedBox(height: 25),
@@ -242,9 +247,11 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed: _loading ? null : _login,
                         child: _loading
                             ? const SizedBox(
-                                height: 20, width: 20,
+                                height: 20,
+                                width: 20,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2,
+                                  color: Colors.white,
+                                  strokeWidth: 2,
                                 ),
                               )
                             : const Text('Login'),
@@ -256,11 +263,13 @@ class _LoginPageState extends State<LoginPage> {
                       child: TextButton(
                         onPressed: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const RegisterPage()),
+                          MaterialPageRoute(
+                              builder: (_) => const RegisterPage()),
                         ),
                         child: Text(
                           'Criar conta',
-                          style: TextStyle(color: cs.primary, fontSize: 14),
+                          style:
+                              TextStyle(color: cs.primary, fontSize: 14),
                         ),
                       ),
                     ),

@@ -23,11 +23,11 @@ class _PerfilPageState extends State<PerfilPage> {
   @override
   void initState() {
     super.initState();
-    nomeController    = TextEditingController(text: widget.user['nome']);
-    emailController   = TextEditingController(text: widget.user['email']);
-    pesoController    = TextEditingController(text: widget.user['peso']   ?? '75');
-    alturaController  = TextEditingController(text: widget.user['altura'] ?? '161');
-    idadeController   = TextEditingController(text: widget.user['idade']  ?? '21');
+    nomeController   = TextEditingController(text: widget.user['nome']);
+    emailController  = TextEditingController(text: widget.user['email']);
+    pesoController   = TextEditingController(text: widget.user['peso']   ?? '75');
+    alturaController = TextEditingController(text: widget.user['altura'] ?? '161');
+    idadeController  = TextEditingController(text: widget.user['idade']  ?? '21');
   }
 
   @override
@@ -59,6 +59,7 @@ class _PerfilPageState extends State<PerfilPage> {
           children: [
             const SizedBox(height: 20),
 
+            // ── Avatar ────────────────────────────────────────────────────
             CircleAvatar(
               radius: 50,
               backgroundColor: cs.primary,
@@ -72,6 +73,7 @@ class _PerfilPageState extends State<PerfilPage> {
 
             const SizedBox(height: 15),
 
+            // ── Nome ──────────────────────────────────────────────────────
             editando
                 ? Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -88,27 +90,35 @@ class _PerfilPageState extends State<PerfilPage> {
                   ),
 
             const SizedBox(height: 5),
-            Text('Brasil 🇧🇷', style: TextStyle(color: cs.onSurface.withOpacity(0.5))),
+            Text('Brasil 🇧🇷',
+                style: TextStyle(color: cs.onSurface.withValues(alpha: 0.5))),
 
             const SizedBox(height: 20),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _editavelBox(context, 'Peso',   pesoController,   'kg'),
-                _editavelBox(context, 'Altura', alturaController, 'cm'),
-                _editavelBox(context, 'Idade',  idadeController,  ''),
-              ],
+            // ── Cards de métricas (peso / altura / idade) ─────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(child: _metricaCard(context, 'Peso',   pesoController,   'kg')),
+                  const SizedBox(width: 10),
+                  Expanded(child: _metricaCard(context, 'Altura', alturaController, 'cm')),
+                  const SizedBox(width: 10),
+                  Expanded(child: _metricaCard(context, 'Idade',  idadeController,  'anos')),
+                ],
+              ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            _CardInfo(icon: Icons.favorite,           title: '70 bpm',    subtitle: 'Batimentos'),
+            // ── Cards de info ─────────────────────────────────────────────
+            _CardInfo(icon: Icons.favorite,              title: '70 bpm',    subtitle: 'Batimentos'),
             const SizedBox(height: 10),
             _CardInfo(icon: Icons.local_fire_department, title: '28500 kcal', subtitle: 'Calorias'),
 
             const SizedBox(height: 20),
 
+            // ── Email ─────────────────────────────────────────────────────
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(20),
@@ -116,14 +126,15 @@ class _PerfilPageState extends State<PerfilPage> {
                 color: cs.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text('Email', style: TextStyle(color: cs.onSurface, fontSize: 16)),
-                  const SizedBox(height: 10),
-                  Text(
-                    emailController.text,
-                    style: TextStyle(color: cs.onSurface.withOpacity(0.5)),
+                  Icon(Icons.email_outlined, color: cs.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      emailController.text,
+                      style: TextStyle(color: cs.onSurface.withValues(alpha: 0.7)),
+                    ),
                   ),
                 ],
               ),
@@ -131,6 +142,7 @@ class _PerfilPageState extends State<PerfilPage> {
 
             const SizedBox(height: 20),
 
+            // ── Botão salvar ──────────────────────────────────────────────
             if (editando)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -141,8 +153,7 @@ class _PerfilPageState extends State<PerfilPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cs.primary,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      minimumSize: const Size(0, 40),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
@@ -159,32 +170,56 @@ class _PerfilPageState extends State<PerfilPage> {
     );
   }
 
-  Widget _editavelBox(
+  // ── Card de métrica com cantos arredondados e cor roxa ───────────────────
+  Widget _metricaCard(
     BuildContext context,
-    String title,
+    String label,
     TextEditingController controller,
     String sufixo,
   ) {
     final cs = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        SizedBox(
-          width: 80,
-          child: TextField(
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: cs.surface, // mesmo fundo dos outros cards
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          TextField(
             controller: controller,
             enabled: editando,
             textAlign: TextAlign.center,
-            style: TextStyle(color: cs.onSurface, fontSize: 18),
             keyboardType: TextInputType.number,
+            style: TextStyle(
+              color: cs.onSurface,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
             decoration: InputDecoration(
               border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+              filled: true,
+              fillColor: Colors.transparent,
               suffixText: sufixo,
-              suffixStyle: TextStyle(color: cs.onSurface.withOpacity(0.5)),
+              suffixStyle: TextStyle(
+                color: cs.onSurface.withValues(alpha: 0.5),
+                fontSize: 12,
+              ),
             ),
           ),
-        ),
-        Text(title, style: TextStyle(color: cs.onSurface.withOpacity(0.5))),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: cs.onSurface.withValues(alpha: 0.6),
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -213,8 +248,8 @@ class _PerfilPageState extends State<PerfilPage> {
 
 class _CardInfo extends StatelessWidget {
   final IconData icon;
-  final String title;
-  final String subtitle;
+  final String   title;
+  final String   subtitle;
 
   const _CardInfo({
     required this.icon,
@@ -239,7 +274,7 @@ class _CardInfo extends StatelessWidget {
           const SizedBox(width: 10),
           Text(title,    style: TextStyle(color: cs.onSurface)),
           const Spacer(),
-          Text(subtitle, style: TextStyle(color: cs.onSurface.withOpacity(0.5))),
+          Text(subtitle, style: TextStyle(color: cs.onSurface.withValues(alpha: 0.5))),
         ],
       ),
     );

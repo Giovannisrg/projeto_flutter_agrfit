@@ -3,7 +3,7 @@ import 'package:projeto_flutter_agrfit/database/treino_dao.dart';
 import 'package:projeto_flutter_agrfit/database/exercicio_dao.dart';
 import 'package:projeto_flutter_agrfit/database/listas_dao.dart';
 import 'package:projeto_flutter_agrfit/pages/chatbot.dart';
-import '../services/auth_service.dart';
+import '/services/auth_service.dart';
 import 'dart:async';
 
 class TreinoPage extends StatefulWidget {
@@ -341,9 +341,6 @@ class _TreinoPageState extends State<TreinoPage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EXECUÇÃO DO TREINO
-// ─────────────────────────────────────────────────────────────────────────────
 class ExecucaoTreinoPage extends StatefulWidget {
   final Map treino;
 
@@ -378,7 +375,6 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
     return '$m:$sec';
   }
 
-  // ── Botão que segue a paleta de cores do tema ─────────────────────────────
   ButtonStyle _botaoEstilo(ColorScheme cs) => ElevatedButton.styleFrom(
     backgroundColor: cs.primary,
     foregroundColor: Colors.white,
@@ -388,7 +384,6 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
   );
 
-  // ── Botão desabilitado (quando treino não iniciado) ───────────────────────
   ButtonStyle _botaoDesabilitado(ColorScheme cs) => ElevatedButton.styleFrom(
     backgroundColor: cs.primary.withValues(alpha: 0.3),
     foregroundColor: Colors.white.withValues(alpha: 0.5),
@@ -549,7 +544,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.play_circle_outline, color: cs.primary),
+                        icon: Icon(Icons.help_outline, color: cs.primary),
                         onPressed: () {
                           Navigator.push(
                             context,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/db_helper.dart';
+import '../services/notification_service.dart';
 import '../main.dart' show salvarTema, temaAtual;
 
 class ConfigPage extends StatefulWidget {
@@ -11,8 +12,9 @@ class ConfigPage extends StatefulWidget {
 }
 
 class _ConfigPageState extends State<ConfigPage> {
-  bool notificacoesAtivas = true;
-  bool temaClaro = false;
+  bool temaClaro          = false;
+  bool notificacoesAtivas = false;
+  TimeOfDay? horarioNotif;
 
   @override
   void initState() {
@@ -21,23 +23,108 @@ class _ConfigPageState extends State<ConfigPage> {
   }
 
   Future<void> _carregarPreferencias() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      notificacoesAtivas = prefs.getBool('notificacoes') ?? true;
-      temaClaro = temaAtual.value == ThemeMode.light;
-    });
-  }
+    final prefs   = await SharedPreferences.getInstance();
+    final horario = await NotificationService.horarioSalvo();
 
-  Future<void> _toggleNotificacoes() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() => notificacoesAtivas = !notificacoesAtivas);
-    await prefs.setBool('notificacoes', notificacoesAtivas);
+    setState(() {
+      temaClaro          = temaAtual.value == ThemeMode.light;
+      notificacoesAtivas = prefs.getBool('notificacoes') ?? false;
+      if (horario != null) {
+        horarioNotif = TimeOfDay(
+          hour:   horario['hora']!,
+          minute: horario['minuto']!,
+        );
+      }
+    });
   }
 
   Future<void> _toggleTema() async {
     final novoModo = temaClaro ? ThemeMode.dark : ThemeMode.light;
     await salvarTema(novoModo);
     setState(() => temaClaro = !temaClaro);
+  }
+
+  Future<void> _toggleNotificacoes() async {
+    if (!notificacoesAtivas) {
+      final horario = await showTimePicker(
+        context: context,
+        initialTime: horarioNotif ?? const TimeOfDay(hour: 8, minute: 0),
+        helpText: 'Escolha o horário do lembrete',
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              timePickerTheme: TimePickerThemeData(
+                backgroundColor: Theme.of(context).cardColor,
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (horario == null) return;
+
+      await NotificationService.agendarLembreteDiario(
+        horario.hour,
+        horario.minute,
+      );
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('notificacoes', true);
+
+      if (!mounted) return;
+      setState(() {
+        notificacoesAtivas = true;
+        horarioNotif       = horario;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Lembrete ativado às ${horario.format(context)} 🔔',
+          ),
+        ),
+      );
+    } else {
+      await NotificationService.cancelarLembreteDiario();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('notificacoes', false);
+
+      if (!mounted) return;
+      setState(() {
+        notificacoesAtivas = false;
+        horarioNotif       = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lembrete desativado 🔕')),
+      );
+    }
+  }
+
+  Future<void> _editarHorario() async {
+    final horario = await showTimePicker(
+      context: context,
+      initialTime: horarioNotif ?? const TimeOfDay(hour: 8, minute: 0),
+      helpText: 'Alterar horário do lembrete',
+
+    );
+
+    if (horario == null || !mounted) return;
+
+    await NotificationService.agendarLembreteDiario(
+      horario.hour,
+      horario.minute,
+    );
+
+    setState(() => horarioNotif = horario);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Horário atualizado para ${horario.format(context)} 🔔'),
+      ),
+    );
   }
 
   @override
@@ -53,7 +140,6 @@ class _ConfigPageState extends State<ConfigPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // ── Aparência — botão igual aos outros, com ícone dinâmico ──
                 _buildButton(
                   context,
                   temaClaro ? 'Modo claro' : 'Modo escuro',
@@ -63,14 +149,32 @@ class _ConfigPageState extends State<ConfigPage> {
                 _buildButton(context, 'Privacidade',
                     onPressed: () => _showPrivacidade(context)),
 
-                // ── Notificações — botão com estado inline ─────────────────
                 _buildButton(
                   context,
                   notificacoesAtivas
-                      ? 'Notificações: Ligadas'
+                      ? 'Notificações: ${horarioNotif?.format(context) ?? 'Ligadas'}'
                       : 'Notificações: Desligadas',
                   onPressed: _toggleNotificacoes,
                 ),
+
+                if (notificacoesAtivas)
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _editarHorario,
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Alterar horário'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 55),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ),
 
                 _buildButton(context, 'Sobre o App',
                     onPressed: () => _showSobre(context)),
@@ -90,7 +194,6 @@ class _ConfigPageState extends State<ConfigPage> {
     );
   }
 
-  // ── Botão padrão (todos do mesmo tamanho) ─────────────────────────────────
   Widget _buildButton(
     BuildContext context,
     String text, {
@@ -102,8 +205,9 @@ class _ConfigPageState extends State<ConfigPage> {
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              isSair ? Colors.red.shade700 : Theme.of(context).colorScheme.primary,
+          backgroundColor: isSair
+              ? Colors.red.shade700
+              : Theme.of(context).colorScheme.primary,
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 55),
           shape: RoundedRectangleBorder(
@@ -119,17 +223,20 @@ class _ConfigPageState extends State<ConfigPage> {
   void _showSobre(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text('Sobre o App'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('AGR Fit', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('AGR Fit',
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             SizedBox(height: 6),
             Text('Versão 1.0.0'),
             SizedBox(height: 12),
-            Text('Desenvolvido por:', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('Desenvolvido por:',
+                style: TextStyle(fontWeight: FontWeight.w600)),
             SizedBox(height: 4),
             Text('• Ana Júlia Morais Moreira'),
             Text('• Rafaela da Silva'),
@@ -153,7 +260,7 @@ class _ConfigPageState extends State<ConfigPage> {
   void _showPrivacidade(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text('Privacidade'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
@@ -166,7 +273,8 @@ class _ConfigPageState extends State<ConfigPage> {
             Text('• Email'),
             Text('• Peso, altura e idade'),
             SizedBox(height: 10),
-            Text('Esses dados são utilizados apenas para personalização dos treinos.'),
+            Text(
+                'Esses dados são utilizados apenas para personalização dos treinos.'),
             SizedBox(height: 10),
             Text('Nenhuma informação é compartilhada com terceiros.'),
           ],
@@ -184,7 +292,7 @@ class _ConfigPageState extends State<ConfigPage> {
   void _showAjuda(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text('Ajuda'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
@@ -210,7 +318,7 @@ class _ConfigPageState extends State<ConfigPage> {
   void _confirmLogout(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text('Sair'),
         content: const Text('Tem certeza que deseja sair da conta?'),
         actions: [
@@ -231,6 +339,7 @@ class _ConfigPageState extends State<ConfigPage> {
   }
 
   void _logout(BuildContext context) async {
+    await NotificationService.cancelarLembreteDiario();
     await DBHelper.instance.closeDatabase();
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

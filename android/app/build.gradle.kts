@@ -20,10 +20,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.projeto_flutter_agrfit"
-
         minSdk = flutter.minSdkVersion
         targetSdk = 36
-
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

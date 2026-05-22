@@ -206,7 +206,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    Text('Usuário',
+                    Text('E-mail',
                         style: TextStyle(
                             color: cs.onSurface.withValues(alpha: 0.7))),
                     const SizedBox(height: 5),

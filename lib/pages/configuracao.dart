@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/db_helper.dart';
 import '../services/notification_service.dart';
+import '../main.dart';
 import '../main.dart' show salvarTema, temaAtual;
 
 class ConfigPage extends StatefulWidget {
@@ -244,7 +245,7 @@ class _ConfigPageState extends State<ConfigPage> {
             SizedBox(height: 12),
             Text('Ciência da Computação — Grupo Anchieta'),
             SizedBox(height: 4),
-            Text('Disciplina: Desenvolvimento Mobile'),
+            Text('Projeto acadêmico desenvolvido em Flutter/Dart para gerenciamento de treinos, com autenticação de usuários e integração com inteligência artificial para assistência personalizada. '),
           ],
         ),
         actions: [
@@ -340,10 +341,21 @@ class _ConfigPageState extends State<ConfigPage> {
 
   void _logout(BuildContext context) async {
     await NotificationService.cancelarLembreteDiario();
+
     await DBHelper.instance.closeDatabase();
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+
+    await prefs.remove('user');
+    await prefs.remove('token');
+
     if (!context.mounted) return;
-    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const MainApp(),
+      ),
+      (route) => false,
+    );
   }
 }

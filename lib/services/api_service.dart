@@ -44,9 +44,6 @@ class ApiService {
     }),
   );
 
-  print("STATUS REGISTER: ${response.statusCode}");
-  print("BODY REGISTER: ${response.body}");
-
   return response.statusCode == 200 || response.statusCode == 201;
 }
 }

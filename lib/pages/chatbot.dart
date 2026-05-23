@@ -71,8 +71,31 @@ class _ChatbotPageState extends State<ChatbotPage> {
     }
 
     try {
-      final resposta = await ChatService.enviarMensagem(pergunta, token);
+      final tokenAtual = await AuthService.getToken();
+
+      if (tokenAtual == null) {
+
+        if (!mounted || !telaAtiva || currentRequest != requestId) return;
+
+        setState(() {
+          mensagens.add({
+            'texto': 'Sessão encerrada.',
+            'isUser': false,
+          });
+
+          carregando = false;
+        });
+
+        return;
+      }
+
+      final resposta = await ChatService.enviarMensagem(
+        pergunta,
+        tokenAtual,
+      );
+
       if (!mounted || !telaAtiva || currentRequest != requestId) return;
+
       setState(() {
         mensagens.add({'texto': resposta, 'isUser': false});
         carregando = false;

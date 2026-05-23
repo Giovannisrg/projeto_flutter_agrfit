@@ -130,7 +130,7 @@ class _ConfigPageState extends State<ConfigPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+//    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Configurações'), centerTitle: true),
@@ -341,8 +341,6 @@ class _ConfigPageState extends State<ConfigPage> {
 
   void _logout(BuildContext context) async {
     await NotificationService.cancelarLembreteDiario();
-
-    await DBHelper.instance.closeDatabase();
 
     final prefs = await SharedPreferences.getInstance();
 

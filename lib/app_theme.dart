@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CORES FIXAS (iguais nos dois temas)
-// ─────────────────────────────────────────────────────────────────────────────
-const kPurple      = Color(0xFF6A1FBF); // roxo principal
-const kPurpleLight = Color(0xFF9C4DCC); // roxo mais claro
+const kPurple      = Color(0xFF9B25B1); // roxo principal
+const kPurpleLight = Color(0xFF6A1FBF); // roxo mais claro
 const kGreen       = Colors.green;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TEMA ESCURO
-// ─────────────────────────────────────────────────────────────────────────────
 final temaEscuro = ThemeData(
   useMaterial3: false,
   brightness: Brightness.dark,

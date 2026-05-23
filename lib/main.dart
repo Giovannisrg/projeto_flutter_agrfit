@@ -78,6 +78,7 @@ class _LoginPageState extends State<LoginPage> {
   String _nomeUsuario  = '';
   String _senhaUsuario = '';
   bool   _loading      = false;
+  bool _mostrarSenha   = false;
 
   final PageController _controller = PageController();
   int    _currentPage = 0;
@@ -136,12 +137,13 @@ class _LoginPageState extends State<LoginPage> {
             await UserDAO().buscarPorEmail(_nomeUsuario);
 
         if (user == null) {
-          await UserDAO().criarUsuario(
-            _nomeUsuario.split('@')[0],
-            _nomeUsuario,
-            _senhaUsuario,
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Usuário não encontrado'),
+            ),
           );
-          user = await UserDAO().buscarPorEmail(_nomeUsuario);
+
+          return;
         }
 
         await AuthService.saveToken(token);
@@ -172,15 +174,20 @@ class _LoginPageState extends State<LoginPage> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: Column(
-        children: [
-          AspectRatio(
-            aspectRatio: 4 / 4,
-            child: PageView.builder(
-              controller: _controller,
-              itemBuilder: (context, index) =>
-                  _buildBanner(banners[index % banners.length]),
-            ),
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: Column(
+            children: [
+              AspectRatio(
+                aspectRatio: 4 / 4,
+                child: PageView.builder(
+                  controller: _controller,
+                  itemBuilder: (context, index) =>
+                      _buildBanner(banners[index % banners.length]),
+                ),
           ),
           Expanded(
             child: Container(
@@ -225,11 +232,25 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 5),
                     TextField(
                       controller: _senhaController,
-                      obscureText: true,
+                      obscureText: !_mostrarSenha,
                       style: TextStyle(color: cs.onSurface),
                       onChanged: (v) => _senhaUsuario = v,
-                      decoration:
-                          const InputDecoration(hintText: 'Digite sua senha'),
+                      decoration: InputDecoration(
+                        hintText: 'Digite sua senha',
+
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _mostrarSenha
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _mostrarSenha = !_mostrarSenha;
+                            });
+                          },
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: 25),
@@ -280,6 +301,9 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ],
       ),
+    ),
+    ),
+    ),
     );
   }
 

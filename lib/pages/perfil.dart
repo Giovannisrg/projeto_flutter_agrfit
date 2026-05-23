@@ -59,7 +59,6 @@ class _PerfilPageState extends State<PerfilPage> {
           children: [
             const SizedBox(height: 20),
 
-            // ── Avatar ────────────────────────────────────────────────────
             CircleAvatar(
               radius: 50,
               backgroundColor: cs.primary,
@@ -73,7 +72,6 @@ class _PerfilPageState extends State<PerfilPage> {
 
             const SizedBox(height: 15),
 
-            // ── Nome ──────────────────────────────────────────────────────
             editando
                 ? Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -95,7 +93,6 @@ class _PerfilPageState extends State<PerfilPage> {
 
             const SizedBox(height: 20),
 
-            // ── Cards de métricas (peso / altura / idade) ─────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -111,14 +108,12 @@ class _PerfilPageState extends State<PerfilPage> {
 
             const SizedBox(height: 16),
 
-            // ── Cards de info ─────────────────────────────────────────────
             _CardInfo(icon: Icons.favorite,              title: '70 bpm',    subtitle: 'Batimentos'),
             const SizedBox(height: 10),
             _CardInfo(icon: Icons.local_fire_department, title: '28500 kcal', subtitle: 'Calorias'),
 
             const SizedBox(height: 20),
 
-            // ── Email ─────────────────────────────────────────────────────
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(20),
@@ -142,7 +137,6 @@ class _PerfilPageState extends State<PerfilPage> {
 
             const SizedBox(height: 20),
 
-            // ── Botão salvar ──────────────────────────────────────────────
             if (editando)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -170,7 +164,6 @@ class _PerfilPageState extends State<PerfilPage> {
     );
   }
 
-  // ── Card de métrica com cantos arredondados e cor roxa ───────────────────
   Widget _metricaCard(
     BuildContext context,
     String label,

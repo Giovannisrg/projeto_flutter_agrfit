@@ -13,6 +13,7 @@ class _RegisterPageState extends State<RegisterPage> {
   String nome = "";
   String email = "";
   String senha = "";
+  bool mostrarSenha = false;
 
   @override
   Widget build(BuildContext context) {
@@ -103,18 +104,38 @@ class _RegisterPageState extends State<RegisterPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
-        obscureText: isPassword,
+        obscureText: isPassword ? !mostrarSenha : false,
         style: const TextStyle(color: Colors.white),
+
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: Colors.white70),
+
           filled: true,
           fillColor: Colors.grey[850],
+
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide.none,
           ),
+
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    mostrarSenha
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: Colors.white70,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      mostrarSenha = !mostrarSenha;
+                    });
+                  },
+                )
+              : null,
         ),
+
         onChanged: onChanged,
       ),
     );

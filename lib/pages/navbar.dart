@@ -35,19 +35,20 @@ class _NavBarPageState extends State<NavBarPage> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: [
-        TreinoPage(user: widget.user),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          TreinoPage(user: widget.user),
 
-        _currentIndex == 1
-            ? ChatbotPage(key: UniqueKey())
-            : const SizedBox(),
+          const ChatbotPage(),
 
-        usuarioPerfil == null
-            ? const Center(child: CircularProgressIndicator())
-            : PerfilPage(user: usuarioPerfil!),
+          usuarioPerfil == null
+              ? const Center(child: CircularProgressIndicator())
+              : PerfilPage(user: usuarioPerfil!),
 
-        ConfigPage(key: UniqueKey()),
-      ][_currentIndex],
+          const ConfigPage(),
+        ],
+      ),
 
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(12),

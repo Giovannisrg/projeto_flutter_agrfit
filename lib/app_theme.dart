@@ -11,9 +11,15 @@ const kGreen       = Colors.green;
 // TEMA ESCURO
 // ─────────────────────────────────────────────────────────────────────────────
 final temaEscuro = ThemeData(
+  useMaterial3: false,
   brightness: Brightness.dark,
   scaffoldBackgroundColor: Colors.black,
   primaryColor: kPurple,
+
+    dialogTheme: const DialogThemeData(
+    backgroundColor: Color(0xFF1C1C1C),
+    surfaceTintColor: Colors.transparent,
+  ),
 
   colorScheme: const ColorScheme.dark(
     primary:   kPurple,
@@ -65,9 +71,15 @@ final temaEscuro = ThemeData(
 
 
 final temaClaro = ThemeData(
+  useMaterial3: false,
   brightness: Brightness.light,
   scaffoldBackgroundColor: const Color(0xFFF5F5F5),
   primaryColor: kPurple,
+
+  dialogTheme: const DialogThemeData(
+  backgroundColor: Colors.white,
+  surfaceTintColor: Colors.transparent,
+),
 
   colorScheme: const ColorScheme.light(
     primary:   kPurple,

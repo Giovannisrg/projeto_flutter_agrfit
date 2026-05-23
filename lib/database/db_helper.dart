@@ -13,14 +13,6 @@ class DBHelper {
     return _database!;
   }
 
-  Future<void> closeDatabase() async {
-    if (_database != null) {
-      await _database!.close();
-      _database = null;
-      print("Banco fechado com sucesso");
-    }
-  }
-
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
@@ -30,15 +22,9 @@ class DBHelper {
       version: 8,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
-        await db.execute('DROP TABLE IF EXISTS exercicios');
-        await db.execute('DROP TABLE IF EXISTS treinos');
-        await db.execute('DROP TABLE IF EXISTS frequencias');
-        await db.execute('DROP TABLE IF EXISTS professores');
-        await db.execute('DROP TABLE IF EXISTS objetivos');
-        await db.execute('DROP TABLE IF EXISTS usuarios');
-        await db.execute('DROP TABLE IF EXISTS exercicios_modelo');
-        await _createDB(db, newVersion);
+        
       },
+
       onOpen: (db) async {
         await _seed(db);
       },

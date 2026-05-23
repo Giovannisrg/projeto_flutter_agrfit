@@ -19,6 +19,8 @@ class _TreinoPageState extends State<TreinoPage> {
   final TreinoDAO treinoDAO = TreinoDAO();
   List<Map<String, dynamic>> treinos = [];
 
+    bool criandoTreino = false;
+
   List<String> mapearGrupo(String tipo) {
     switch (tipo) {
       case 'Push':  return ['Peito', 'Ombro', 'Tríceps'];
@@ -47,12 +49,6 @@ class _TreinoPageState extends State<TreinoPage> {
     carregarTreinos();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    carregarTreinos();
-  }
-
   Future<void> carregarTreinos() async {
     try {
       final usuarioAtual = await AuthService.getUser();
@@ -78,10 +74,13 @@ class _TreinoPageState extends State<TreinoPage> {
 
     int? professorId, objetivoId, frequenciaId;
 
+    if (!mounted) return;
+
     await showDialog(
       context: context,
+      barrierColor: Colors.black54,
       builder: (_) => StatefulBuilder(
-        builder: (_, setState) {
+        builder: (dialogContext, setState) {
           final cs = Theme.of(context).colorScheme;
 
           return AlertDialog(
@@ -89,77 +88,192 @@ class _TreinoPageState extends State<TreinoPage> {
             title: Text('Montar treino', style: TextStyle(color: cs.onSurface)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
-                _dropdown(cs, 'Professor', professorId, professores,
-                    (v) => setState(() => professorId = v)),
-                _dropdown(cs, 'Objetivo', objetivoId, objetivos,
-                    (v) => setState(() => objetivoId = v)),
-                DropdownButton<int>(
-                  hint: Text('Dias/semana', style: TextStyle(color: cs.onSurface)),
-                  value: frequenciaId,
-                  dropdownColor: Theme.of(context).cardColor,
-                  items: frequencias.map((f) => DropdownMenuItem<int>(
-                    value: f['id'] as int,
-                    child: Text('${f['dias_por_semana']} dias',
-                        style: TextStyle(color: cs.onSurface)),
-                  )).toList(),
-                  onChanged: (v) => setState(() => frequenciaId = v),
-                ),
-              ],
-            ),
+                children: [
+
+                  _dropdown(
+                    cs,
+                    'Professor',
+                    professorId,
+                    professores,
+                    (v) => setState(() => professorId = v),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  _dropdown(
+                    cs,
+                    'Objetivo',
+                    objetivoId,
+                    objetivos,
+                    (v) => setState(() => objetivoId = v),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  DropdownButton<int>(
+                    hint: Text(
+                      'Dias/semana',
+                      style: TextStyle(color: cs.onSurface),
+                    ),
+                    value: frequenciaId,
+                    dropdownColor: Theme.of(context).cardColor,
+
+                    items: frequencias.map((f) {
+                      return DropdownMenuItem<int>(
+                        value: f['id'] as int,
+                        child: Text('${f['dias_por_semana']} dias'),
+                      );
+                    }).toList(),
+
+                    onChanged: (v) => setState(() => frequenciaId = v),
+                  ),
+                ],
+              ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: Text('Cancelar', style: TextStyle(color: cs.primary)),
               ),
               TextButton(
-                onPressed: () async {
-                  if (objetivoId == null || professorId == null || frequenciaId == null) {
+              onPressed: () async {
+
+                if (criandoTreino) return;
+
+                setState(() => criandoTreino = true);
+
+                try {
+
+                  if (objetivoId == null ||
+                      professorId == null ||
+                      frequenciaId == null) {
+
                     if (!context.mounted) return;
+
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Preencha todos os campos')),
+                      const SnackBar(
+                        content: Text('Preencha todos os campos'),
+                      ),
                     );
+
                     return;
                   }
 
-                  final freq   = frequencias.firstWhere((f) => f['id'] == frequenciaId);
-                  final dias   = freq['dias_por_semana'];
+                  final usuarioAtual = await AuthService.getUser();
+
+                  if (usuarioAtual == null) {
+
+                    if (!mounted) return;
+
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Faça login novamente'),
+                      ),
+                    );
+
+                    return;
+                  }
+
+                  final freq = frequencias.firstWhere(
+                    (f) => f['id'] == frequenciaId,
+                  );
+
+                  final dias = freq['dias_por_semana'];
+
                   final grupos = _gerarDivisao(dias);
+
                   final letras = ['A', 'B', 'C', 'D', 'E'];
-                  final modelos = await listas.exerciciosPorObjetivo(objetivoId!);
+
+                  final modelos = await listas.exerciciosPorObjetivo(
+                    objetivoId!,
+                  );
 
                   for (int i = 0; i < grupos.length; i++) {
-                    final grupo    = grupos[i];
-                    final letra    = letras[i];
+
+                    final grupo = grupos[i];
+
+                    final letra = letras[i];
+
                     final treinoId = await treinoDAO.criarTreino(
-                      widget.user['id'], objetivoId!, professorId!, frequenciaId!,
+                      usuarioAtual['id'],
+                      objetivoId!,
+                      professorId!,
+                      frequenciaId!,
                       'Treino $letra: ${traduzirGrupo(grupo)}',
                     );
 
                     final gruposMusculares = mapearGrupo(grupo);
-                    final filtrados = modelos.where((e) {
-                      final grupoDB = (e['grupo_muscular'] ?? '').toString().toLowerCase();
-                      return gruposMusculares.map((g) => g.toLowerCase()).contains(grupoDB);
-                    }).toList()..shuffle();
 
-                    final usados     = <String>{};
+                    final filtrados = modelos.where((e) {
+
+                      final grupoDB = (e['grupo_muscular'] ?? '')
+                          .toString()
+                          .toLowerCase();
+
+                      return gruposMusculares
+                          .map((g) => g.toLowerCase())
+                          .contains(grupoDB);
+
+                    }).toList();
+
+                    if (filtrados.isEmpty) continue;
+
+                    filtrados.shuffle();
+
+                    final usados = <String>{};
+
                     final selecionados = filtrados.where((e) {
-                      if (usados.contains(e['nome'])) return false;
+
+                      if (usados.contains(e['nome'])) {
+                        return false;
+                      }
+
                       usados.add(e['nome']);
+
                       return true;
+
                     }).take(4).toList();
 
                     for (var m in selecionados) {
+
                       await ExercicioDAO().inserirExercicio(
-                          treinoId, m['nome'], '', m['series'], m['reps']);
+                        treinoId,
+                        m['nome'],
+                        '',
+                        m['series'],
+                        m['reps'],
+                      );
                     }
                   }
 
                   if (!mounted) return;
+
                   Navigator.pop(context);
+
                   await carregarTreinos();
-                },
-                child: const Text('Criar'),
+
+                } catch (e) {
+
+                  debugPrint('Erro ao criar treino: $e');
+
+                  if (!mounted) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erro ao criar treino: $e'),
+                    ),
+                  );
+
+                } finally {
+
+                  if (mounted) {
+                    setState(() => criandoTreino = false);
+                  }
+          
+                }
+              },
+              child: const Text('Criar'),
               ),
             ],
           );
@@ -176,23 +290,35 @@ class _TreinoPageState extends State<TreinoPage> {
   }
 
   DropdownButton<int> _dropdown(
-    ColorScheme cs,
-    String hint,
-    int? value,
-    List<Map<String, dynamic>> items,
-    ValueChanged<int?> onChanged,
-  ) {
-    return DropdownButton<int>(
-      hint: Text(hint, style: TextStyle(color: cs.onSurface)),
-      value: value,
-      dropdownColor: cs.surface,
-      items: items.map((p) => DropdownMenuItem<int>(
+  ColorScheme cs,
+  String hint,
+  int? value,
+  List<Map<String, dynamic>> items,
+  ValueChanged<int?> onChanged,
+) {
+  return DropdownButton<int>(
+    hint: Text(
+      hint,
+      style: TextStyle(color: cs.onSurface),
+    ),
+
+    value: value,
+
+    dropdownColor: cs.surface,
+
+    items: items.map((p) {
+      return DropdownMenuItem<int>(
         value: p['id'] as int,
-        child: Text(p['nome'], style: TextStyle(color: cs.onSurface)),
-      )).toList(),
-      onChanged: onChanged,
-    );
-  }
+        child: Text(
+          p['nome'],
+          style: TextStyle(color: cs.onSurface),
+        ),
+      );
+    }).toList(),
+
+    onChanged: onChanged,
+  );
+} 
 
   Future<void> excluirTreino(Map treino) async {
     if (!mounted) return;
@@ -473,7 +599,7 @@ class _ExecucaoTreinoPageState extends State<ExecucaoTreinoPage>
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: Theme.of(context).cardColor,
-        title: Text('Treino finalizado 🎉', style: TextStyle(color: cs.onSurface)),
+        title: Text('Treino finalizado', style: TextStyle(color: cs.onSurface)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

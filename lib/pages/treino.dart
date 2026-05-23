@@ -81,199 +81,210 @@ class _TreinoPageState extends State<TreinoPage> {
       barrierColor: Colors.black54,
       builder: (_) => StatefulBuilder(
         builder: (dialogContext, setState) {
-          final cs = Theme.of(context).colorScheme;
+          final cs = Theme.of(dialogContext).colorScheme;
 
           return AlertDialog(
-            backgroundColor: Theme.of(context).cardColor,
-            title: Text('Montar treino', style: TextStyle(color: cs.onSurface)),
+            backgroundColor: Theme.of(dialogContext).cardColor,
+            title: Text(
+              'Montar treino',
+              style: TextStyle(color: cs.onSurface),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
-                children: [
+              children: [
 
-                  _dropdown(
-                    cs,
-                    'Professor',
-                    professorId,
-                    professores,
-                    (v) => setState(() => professorId = v),
+                _dropdown(
+                  cs,
+                  'Professor',
+                  professorId,
+                  professores,
+                  (v) => setState(() => professorId = v),
+                ),
+
+                const SizedBox(height: 12),
+
+                _dropdown(
+                  cs,
+                  'Objetivo',
+                  objetivoId,
+                  objetivos,
+                  (v) => setState(() => objetivoId = v),
+                ),
+
+                const SizedBox(height: 12),
+
+                DropdownButton<int>(
+                  hint: Text(
+                    'Dias/semana',
+                    style: TextStyle(color: cs.onSurface),
                   ),
 
-                  const SizedBox(height: 12),
+                  value: frequenciaId,
 
-                  _dropdown(
-                    cs,
-                    'Objetivo',
-                    objetivoId,
-                    objetivos,
-                    (v) => setState(() => objetivoId = v),
-                  ),
+                  dropdownColor: Theme.of(dialogContext).cardColor,
 
-                  const SizedBox(height: 12),
+                  items: frequencias.map((f) {
+                    return DropdownMenuItem<int>(
+                      value: f['id'] as int,
+                      child: Text('${f['dias_por_semana']} dias'),
+                    );
+                  }).toList(),
 
-                  DropdownButton<int>(
-                    hint: Text(
-                      'Dias/semana',
-                      style: TextStyle(color: cs.onSurface),
-                    ),
-                    value: frequenciaId,
-                    dropdownColor: Theme.of(context).cardColor,
+                  onChanged: (v) => setState(() => frequenciaId = v),
+                ),
+              ],
+            ),
 
-                    items: frequencias.map((f) {
-                      return DropdownMenuItem<int>(
-                        value: f['id'] as int,
-                        child: Text('${f['dias_por_semana']} dias'),
-                      );
-                    }).toList(),
-
-                    onChanged: (v) => setState(() => frequenciaId = v),
-                  ),
-                ],
-              ),
             actions: [
+
               TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text('Cancelar', style: TextStyle(color: cs.primary)),
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(
+                  'Cancelar',
+                  style: TextStyle(color: cs.primary),
+                ),
               ),
+
               TextButton(
-              onPressed: () async {
+                onPressed: () async {
 
-                if (criandoTreino) return;
+                  if (criandoTreino) return;
 
-                setState(() => criandoTreino = true);
+                  this.setState(() => criandoTreino = true);
 
-                try {
+                  try {
 
-                  if (objetivoId == null ||
-                      professorId == null ||
-                      frequenciaId == null) {
+                    if (objetivoId == null ||
+                        professorId == null ||
+                        frequenciaId == null) {
 
-                    if (!context.mounted) return;
+                      if (!dialogContext.mounted) return;
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Preencha todos os campos'),
-                      ),
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        const SnackBar(
+                          content: Text('Preencha todos os campos'),
+                        ),
+                      );
+
+                      return;
+                    }
+
+                    final usuarioAtual = await AuthService.getUser();
+
+                    if (usuarioAtual == null) {
+
+                      if (!dialogContext.mounted) return;
+
+                      Navigator.pop(dialogContext);
+
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        const SnackBar(
+                          content: Text('Faça login novamente'),
+                        ),
+                      );
+
+                      return;
+                    }
+
+                    final freq = frequencias.firstWhere(
+                      (f) => f['id'] == frequenciaId,
                     );
 
-                    return;
-                  }
+                    final dias = freq['dias_por_semana'];
 
-                  final usuarioAtual = await AuthService.getUser();
+                    final grupos = _gerarDivisao(dias);
 
-                  if (usuarioAtual == null) {
+                    final letras = ['A', 'B', 'C', 'D', 'E'];
+
+                    final modelos = await listas.exerciciosPorObjetivo(
+                      objetivoId!,
+                    );
+
+                    for (int i = 0; i < grupos.length; i++) {
+
+                      final grupo = grupos[i];
+
+                      final letra = letras[i];
+
+                      final treinoId = await treinoDAO.criarTreino(
+                        usuarioAtual['id'],
+                        objetivoId!,
+                        professorId!,
+                        frequenciaId!,
+                        'Treino $letra: ${traduzirGrupo(grupo)}',
+                      );
+
+                      final gruposMusculares = mapearGrupo(grupo);
+
+                      final filtrados = modelos.where((e) {
+
+                        final grupoDB = (e['grupo_muscular'] ?? '')
+                            .toString()
+                            .toLowerCase();
+
+                        return gruposMusculares
+                            .map((g) => g.toLowerCase())
+                            .contains(grupoDB);
+
+                      }).toList();
+
+                      if (filtrados.isEmpty) continue;
+
+                      filtrados.shuffle();
+
+                      final usados = <String>{};
+
+                      final selecionados = filtrados.where((e) {
+
+                        if (usados.contains(e['nome'])) {
+                          return false;
+                        }
+
+                        usados.add(e['nome']);
+
+                        return true;
+
+                      }).take(4).toList();
+
+                      for (var m in selecionados) {
+
+                        await ExercicioDAO().inserirExercicio(
+                          treinoId,
+                          m['nome'],
+                          '',
+                          m['series'],
+                          m['reps'],
+                        );
+                      }
+                    }
 
                     if (!mounted) return;
 
-                    Navigator.pop(context);
+                    Navigator.pop(dialogContext);
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Faça login novamente'),
+                    await carregarTreinos();
+
+                  } catch (e) {
+
+                    debugPrint('Erro ao criar treino: $e');
+
+                    if (!dialogContext.mounted) return;
+
+                    ScaffoldMessenger.of(dialogContext).showSnackBar(
+                      SnackBar(
+                        content: Text('Erro ao criar treino: $e'),
                       ),
                     );
 
-                    return;
-                  }
+                  } finally {
 
-                  final freq = frequencias.firstWhere(
-                    (f) => f['id'] == frequenciaId,
-                  );
-
-                  final dias = freq['dias_por_semana'];
-
-                  final grupos = _gerarDivisao(dias);
-
-                  final letras = ['A', 'B', 'C', 'D', 'E'];
-
-                  final modelos = await listas.exerciciosPorObjetivo(
-                    objetivoId!,
-                  );
-
-                  for (int i = 0; i < grupos.length; i++) {
-
-                    final grupo = grupos[i];
-
-                    final letra = letras[i];
-
-                    final treinoId = await treinoDAO.criarTreino(
-                      usuarioAtual['id'],
-                      objetivoId!,
-                      professorId!,
-                      frequenciaId!,
-                      'Treino $letra: ${traduzirGrupo(grupo)}',
-                    );
-
-                    final gruposMusculares = mapearGrupo(grupo);
-
-                    final filtrados = modelos.where((e) {
-
-                      final grupoDB = (e['grupo_muscular'] ?? '')
-                          .toString()
-                          .toLowerCase();
-
-                      return gruposMusculares
-                          .map((g) => g.toLowerCase())
-                          .contains(grupoDB);
-
-                    }).toList();
-
-                    if (filtrados.isEmpty) continue;
-
-                    filtrados.shuffle();
-
-                    final usados = <String>{};
-
-                    final selecionados = filtrados.where((e) {
-
-                      if (usados.contains(e['nome'])) {
-                        return false;
-                      }
-
-                      usados.add(e['nome']);
-
-                      return true;
-
-                    }).take(4).toList();
-
-                    for (var m in selecionados) {
-
-                      await ExercicioDAO().inserirExercicio(
-                        treinoId,
-                        m['nome'],
-                        '',
-                        m['series'],
-                        m['reps'],
-                      );
+                    if (mounted) {
+                      this.setState(() => criandoTreino = false);
                     }
                   }
+                },
 
-                  if (!mounted) return;
-
-                  Navigator.pop(context);
-
-                  await carregarTreinos();
-
-                } catch (e) {
-
-                  debugPrint('Erro ao criar treino: $e');
-
-                  if (!mounted) return;
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Erro ao criar treino: $e'),
-                    ),
-                  );
-
-                } finally {
-
-                  if (mounted) {
-                    setState(() => criandoTreino = false);
-                  }
-          
-                }
-              },
-              child: const Text('Criar'),
+                child: const Text('Criar'),
               ),
             ],
           );

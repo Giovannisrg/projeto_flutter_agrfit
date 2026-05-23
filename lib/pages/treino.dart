@@ -19,7 +19,7 @@ class _TreinoPageState extends State<TreinoPage> {
   final TreinoDAO treinoDAO = TreinoDAO();
   List<Map<String, dynamic>> treinos = [];
 
-    bool criandoTreino = false;
+    ValueNotifier<bool> criandoTreino = ValueNotifier(false);
 
   List<String> mapearGrupo(String tipo) {
     switch (tipo) {
@@ -138,7 +138,7 @@ class _TreinoPageState extends State<TreinoPage> {
             actions: [
 
               TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
+                onPressed: () => Navigator.pop(dialogContext, true),
                 child: Text(
                   'Cancelar',
                   style: TextStyle(color: cs.primary),
@@ -148,9 +148,9 @@ class _TreinoPageState extends State<TreinoPage> {
               TextButton(
                 onPressed: () async {
 
-                  if (criandoTreino) return;
+                  if (criandoTreino.value) return;
 
-                  this.setState(() => criandoTreino = true);
+                  criandoTreino.value = true;
 
                   try {
 
@@ -279,7 +279,7 @@ class _TreinoPageState extends State<TreinoPage> {
                   } finally {
 
                     if (mounted) {
-                      this.setState(() => criandoTreino = false);
+                      criandoTreino.value = false;
                     }
                   }
                 },
@@ -337,18 +337,18 @@ class _TreinoPageState extends State<TreinoPage> {
 
     final confirmar = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: Theme.of(context).cardColor,
         title: Text('Excluir treino', style: TextStyle(color: cs.onSurface)),
         content: Text('Tem certeza que deseja excluir esse treino?',
             style: TextStyle(color: cs.onSurface.withValues(alpha: 0.7))),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: Text('Excluir',
                 style: TextStyle(color: cs.primary, fontWeight: FontWeight.w500)),
           ),
@@ -452,7 +452,6 @@ class _TreinoPageState extends State<TreinoPage> {
                     ),
                   ),
 
-            // ── Botão Criar treino — usa cor primária do tema ───────────────
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

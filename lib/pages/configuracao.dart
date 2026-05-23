@@ -319,19 +319,21 @@ class _ConfigPageState extends State<ConfigPage> {
   void _confirmLogout(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Sair'),
         content: const Text('Tem certeza que deseja sair da conta?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _logout(context);
-            },
+            onPressed: () async {
+            Navigator.pop(dialogContext);
+            await Future.delayed(const Duration(milliseconds: 100));
+            if (!mounted) return;
+            _logout(context);
+          },
             child: const Text('Sair'),
           ),
         ],

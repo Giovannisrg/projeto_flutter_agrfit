@@ -238,6 +238,6 @@ Este projeto está disponível para fins acadêmicos e de estudo.
 
 ## Autores
 
-Ana Julia Morais
-Giovanni Santiago
+Ana Julia Morais |
+Giovanni Santiago |
 Rafaela da Silva
